@@ -2,7 +2,13 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0C10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinLOLO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="FinLOLO — Gestion patrimoniale privée">
 <title>FinLOLO — Patrimoine privé</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -192,18 +198,50 @@ a{color:inherit;text-decoration:none}
 .tri-item label{font-size:.65rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;font-family:DM Mono,monospace;display:block;margin-bottom:3px}
 .tri-item .val{font-family:Syne,sans-serif;font-weight:700;font-size:1.1rem}
 
-/* RESPONSIVE */
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;border-radius:6px;background:transparent;border:none;z-index:200}
+.hamburger span{width:20px;height:2px;background:var(--txt2);border-radius:2px;transition:.2s}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(2px)}
+.sidebar-overlay.active{display:block}
+
+/* RESPONSIVE MOBILE */
 @media(max-width:900px){
-  .sidebar{transform:translateX(-100%)}
+  :root{--sidebar-w:240px}
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    transform:translateX(-100%);
+    transition:transform .25s cubic-bezier(.4,0,.2,1);
+    z-index:100;
+    width:var(--sidebar-w);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .sidebar.open{transform:translateX(0)}
   .main{margin-left:0}
+  .hamburger{display:flex}
+  .topbar{padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top))}
   .kpi-strip{grid-template-columns:1fr 1fr}
   .env-grid{grid-template-columns:1fr 1fr}
   .grid-2,.grid-2-1,.grid-3{grid-template-columns:1fr}
   .col2{grid-column:span 1}
+  .tri-box{grid-template-columns:1fr 1fr}
+  .page{padding:16px}
+  .kpi-value{font-size:1.1rem}
+  .chart-wrap canvas{max-height:160px}
 }
+@media(max-width:480px){
+  .kpi-strip{grid-template-columns:1fr 1fr}
+  .env-grid{grid-template-columns:1fr}
+  .tri-box{grid-template-columns:1fr 1fr}
+  .page{padding:12px}
+}
+
+/* PWA safe areas (iPhone notch / Dynamic Island) */
+.shell{padding-top:env(safe-area-inset-top)}
+.topbar{padding-left:max(26px, env(safe-area-inset-left));padding-right:max(26px, env(safe-area-inset-right))}
 </style>
 </head>
 <body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="shell">
 
 <nav class="sidebar" id="sidebar">
@@ -238,6 +276,9 @@ a{color:inherit;text-decoration:none}
 <div class="main">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
       <div class="topbar-title" id="topbar-title">Dashboard</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -372,14 +413,14 @@ const D = {
     {id:"av_ubs",nom:"AV UBS Multi-Opportunités Vie 2",court:"AV UBS",type:"assurance_vie",assureur:"Cardif (AEP – BNP Paribas Cardif)",courtier:"UBS France SA",numero:"182000187",ouverture:"2021-09-13",nanti:true,demembre:false,couleur:"#4A9EFF",icone:"🏦",
       pru:1300000,
       // Rachats documentés (sorties d'épargne liées au remboursement Lombard — à exclure du calcul de performance)
-      rachats_documentes:385816,
+      rachats_documentes:385818, // 38077+84520+49872+61526+101823+50000
       rachats:[
-        {date:"2023-02-28",montant:38077,note:"Rachat AV UBS → Remb. Lombard"},
-        {date:"2023-04-30",montant:84520,note:"Rachat AV UBS → Remb. Lombard"},
-        {date:"2023-09-30",montant:49872,note:"Rachat AV UBS → Remb. Lombard"},
-        {date:"2024-04-30",montant:61526,note:"Rachat AV UBS → Remb. Lombard"},
-        {date:"2025-03-31",montant:101823,note:"Rachat AV UBS → Remb. Lombard"},
-        {date:"2026-02-28",montant:50000,note:"Rachat AV UBS → Remb. Lombard"}
+        {date:"2023-02-28",montant:38077, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff déc22→fév23 = -38077 exact)"},
+        {date:"2023-04-30",montant:84520, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap interpolé, supposé POST"},
+        {date:"2023-09-30",montant:49872, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap interpolé, supposé POST"},
+        {date:"2024-04-30",montant:61526, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff mars24→avr24 ≈ rachat)"},
+        {date:"2025-03-31",montant:101823,snapPost:false,note:"Rachat AV UBS → Remb. Lombard — snap PRÉ-rachat (baisse avr25 = rachat + perf)"},
+        {date:"2026-02-28",montant:50000, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff jan26→fév26 ≈ rachat)"}
       ],
       rachats_note:"Rachats AV UBS documentés — 6 virements confirmés."},
     {id:"av_cnp_fantom",nom:"CNP One Capi — FANTOM",court:"AV FANTOM",type:"assurance_vie",assureur:"CNP Patrimoine",courtier:"UBS France N°CNP014011",numero:"A7A001415",ouverture:"2021-11-26",nanti:true,nanti_detail:"Co-nanti avec AV UBS — Lombard N°5033576",demembre:true,demembre_detail:{np:"Tom Roussel",us:"Laurent Roussel"},couleur:"#9B7FFC",icone:"🔵",
@@ -494,18 +535,32 @@ const D = {
     {date:"2023-06-30",env:"pe_global_strategies",val:109950}
   ],
 
-  // MSCI World approximatif (indice base 100 en jan 2021 → points de référence)
+  // MSCI World base 100 = déc 2021 — source justETF IE00B4L5Y983
+  // 2022: -12,96% | 2023: +19,55% | 2024: +26,24% | 2025: +7,12% | YTD avr26: +0,74%
   msci_world:[
-    {date:"2021-12-31",val:100},{date:"2022-03-31",val:95},
-    {date:"2022-12-31",val:78},{date:"2023-03-31",val:87},
-    {date:"2023-09-30",val:90},{date:"2024-03-31",val:108},
-    {date:"2024-11-29",val:117},{date:"2025-03-31",val:121},
-    {date:"2025-06-30",val:118}
+    {date:"2021-12-31", val:100.00},
+    {date:"2022-03-31", val:96.67},
+    {date:"2022-06-30", val:93.38},
+    {date:"2022-09-30", val:90.16},
+    {date:"2022-12-31", val:87.04}, // -12,96%
+    {date:"2023-03-31", val:90.99},
+    {date:"2023-06-30", val:95.15},
+    {date:"2023-09-30", val:99.55},
+    {date:"2023-12-31", val:104.06}, // +19,55%
+    {date:"2024-03-31", val:110.26},
+    {date:"2024-06-30", val:116.90},
+    {date:"2024-09-30", val:124.00},
+    {date:"2024-12-31", val:131.37}, // +26,24%
+    {date:"2025-03-31", val:133.70},
+    {date:"2025-06-30", val:136.12},
+    {date:"2025-09-30", val:138.61},
+    {date:"2025-12-31", val:140.72}, // +7,12%
+    {date:"2026-04-05", val:141.76}  // YTD +0,74%
   ],
 
   positions:[
     {env:"av_ubs",poche:"Libre UBS",support:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",cat:"structuré",val:100400,pru:100834},
-    {env:"av_ubs",poche:"Libre UBS",support:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",cat:"structuré",val:40303,pru:41654},
+    // Alizé 5 Ans Oil & Gas 2025 (FR001400X870) — REMBOURSÉ le 02/04/2026 à 109% — position supprimée de D.positions
     {env:"av_ubs",poche:"Libre UBS",support:"FCPR Eurazeo Strategic Opportunities 3 D",isin:"FR001400B3M1",cat:"pe",val:79774,pru:null},
     {env:"av_ubs",poche:"Libre UBS",support:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",cat:"structuré",val:113992,pru:100000},
     {env:"av_ubs",poche:"Libre UBS",support:"Fonds Général AEP",isin:null,cat:"fonds_euros",val:114004,pru:null},
@@ -697,6 +752,78 @@ const D = {
     {annee:2022,adm:2425,mandat:3100,ps:null,total:5525,src:"reconstitué"},
     {annee:2023,adm:2300,mandat:2950,ps:null,total:5250,src:"reconstitué"},
     {annee:2024,adm:2450,mandat:2895,ps:null,total:5345,src:"reconstitué"}
+  ],
+
+  // ──────────────────────────────────────────────────────
+  // MANDAT UBS — snapshots trimestriels (source: AEP trimestriels)
+  // Frais: 0,50%/an AEP (enveloppe) + 0,50%/an mandat UBS = 1,00%/an total
+  // Les valorisations ci-dessous sont NETTES des frais de gestion mandat 0,50%
+  // mais BRUTES des 0,50% frais AEP (prélevés sur l'enveloppe globale)
+  // ──────────────────────────────────────────────────────
+  mandat:{
+    pru:500000, // Mise initiale mandat (13/09/2021)
+    frais_mandat_pct:0.005,  // 0,50%/an UBS
+    frais_aep_pct:0.005,     // 0,50%/an AEP Cardif
+    frais_total_pct:0.010,   // 1,00%/an total (approximation — frais AEP mutualisés enveloppe)
+
+    // Flux entrants/sortants du mandat (nécessaires pour TWRR correct)
+    flux:[
+      // Transfert documenté : AEP avenant — FG Bonus 150% → Mandat UBS
+      // Date exacte à confirmer — posé au 08/11/2022 (date avenant connu)
+      // Valeur mandat juste avant transfert inconnue → hypothèse calculée (484 821 × ratio)
+      {date:"2022-11-08", montant:50000, note:"Arbitrage FG Bonus 150% → Mandat (avenant AEP)", confirme:false}
+    ],
+
+    // Snapshots valorisation mandat (source: AEP trimestriels)
+    snapshots:[
+      {date:"2021-09-13", val:500000,  src:"AEP conditions particulières — mise initiale"},
+      {date:"2022-03-31", val:484821,  src:"AEP Q1 2022"},
+      // Valeur pré-transfert nov 2022 — interpolée linéairement entre mars 2022 et mars 2023
+      // (484821 + (524461-484821) × (mois_nov-mois_mars)/(mois_mars23-mois_mars22))
+      // = 484821 + 39640 × (8/12) = 484821 + 26427 = ~511248 (hors perf)
+      // Non inséré comme snapshot — le flux de 50k est traité séparément dans le TWRR
+      {date:"2023-03-31", val:524461,  src:"AEP Q1 2023"},
+      {date:"2023-09-30", val:526941,  src:"AEP Q3 2023"},
+      {date:"2024-03-31", val:563857,  src:"AEP Q1 2024"},
+      {date:"2025-03-31", val:575782,  src:"AEP Q1 2025"},
+      {date:"2025-06-30", val:582291,  src:"AEP Q2 2025"},
+      {date:"2026-04-05", val:582292,  src:"Relevé UBS 05/04/2026 (confirmé)"}
+    ],
+
+    // Note méthodologique TWRR
+    note_twrr:"TWRR calculé sur jalons trimestriels disponibles. Le transfert de 50 000€ (nov. 2022) est neutralisé comme flux entrant. Valeur pré-transfert estimée par interpolation — à confirmer avec l'AEP Q3 2022 si disponible.",
+    note_frais:"Frais de gestion mandat (0,50%/an) prélevés en continu par UBS — valorisations déjà nettes. Frais AEP (0,50%/an) prélevés sur l'enveloppe globale, non isolables sur le mandat seul."
+  },
+
+  // MSCI World NTR EUR (non hedgé) — base 100 = 13/09/2021
+  // MSCI World NTR EUR — base 100 = 13/09/2021
+  // Source : justETF IE00B4L5Y983 (iShares Core MSCI World Acc EUR)
+  // Performances annuelles EXACTES en EUR :
+  // 2021 : +31,16% (Morningstar) | 2022 : -12,96% | 2023 : +19,55% | 2024 : +26,24% | 2025 : +7,12%
+  // YTD avr 2026 : +0,74% (justETF)
+  // Méthode : v(t) = v(débutAnnée) × (1 + rAnnuel)^(fraction_année) — interpolation géométrique
+  // Jalons fin d'année ancrés : 108,43 | 94,38 | 112,83 | 142,44 | 152,58
+  // TWRR annualisé sept 2021 → avr 2026 : +9,89%/an (+53,7% cumulé)
+  msci_world_acc:[
+    {date:"2021-09-13", val:100.00}, // base mandat
+    {date:"2021-12-31", val:108.43}, // ← ancré 2021 (+31,16%, fraction 3,6 mois)
+    {date:"2022-03-31", val:104.81},
+    {date:"2022-06-30", val:101.24},
+    {date:"2022-09-30", val:97.75},
+    {date:"2022-12-31", val:94.38},  // ← ancré 2022 (-12,96%)
+    {date:"2023-03-31", val:98.59},
+    {date:"2023-06-30", val:103.09},
+    {date:"2023-09-30", val:107.85},
+    {date:"2023-12-31", val:112.83}, // ← ancré 2023 (+19,55%)
+    {date:"2024-03-31", val:119.50},
+    {date:"2024-06-30", val:126.65},
+    {date:"2024-09-30", val:134.31},
+    {date:"2024-12-31", val:142.44}, // ← ancré 2024 (+26,24%)
+    {date:"2025-03-31", val:144.85},
+    {date:"2025-06-30", val:147.36},
+    {date:"2025-09-30", val:149.95},
+    {date:"2025-12-31", val:152.58}, // ← ancré 2025 (+7,12%)
+    {date:"2026-04-05", val:153.71}  // YTD +0,74% au 05/04/2026 (justETF)
   ]
 };
 
@@ -798,7 +925,7 @@ function nav(page,envId=null){
   if(page==='frais') renderFrais();
   if(page==='timeline') renderTimeline();
   if(page==='strategie') renderStrategie();
-  if(page==='rendement'){renderRendement();setTimeout(()=>initPerfChart(_perfScope),80);}
+  if(page==='rendement'){renderRendement();setTimeout(()=>{initPerfChart(_perfScope);initMandatChart();},80);}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1919,17 +2046,24 @@ function rendAnnualise(scope){
       return before.val+(after.val-before.val)*t;
     }
     // Jalons: ouverture + dates de rachats + point final
-    const milestones=[{date:first.date,rachat:0}];
-    rachats.forEach(function(r){ milestones.push({date:r.date,rachat:r.montant}); });
-    milestones.push({date:last.date,rachat:0});
+    const milestones=[{date:first.date,rachat:0,snapPost:true}];
+    rachats.forEach(function(r){ milestones.push({date:r.date,rachat:r.montant,snapPost:r.snapPost!==false}); });
+    milestones.push({date:last.date,rachat:0,snapPost:true});
     milestones.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-    // Produit des rendements sous-période
+    // Produit TWRR sur sous-périodes
+    // snapPost=true  : snapshot à la date du rachat est POST-rachat → valAvantRachat = snap + rachat
+    // snapPost=false : snapshot à la date du rachat est PRÉ-rachat  → valAvantRachat = snap (pas d'ajout)
+    //                  le start de la sous-période suivante = snap - rachat
     let twrrProduct=1;
+    let startVal=ubsValAt(milestones[0].date);
     for(let i=0;i<milestones.length-1;i++){
-      const valStart=ubsValAt(milestones[i].date);
-      // Le snapshot à la date du rachat est APRÈS retrait → reconstituer la val brute
-      const valEndBrut=ubsValAt(milestones[i+1].date)+milestones[i+1].rachat;
-      if(valStart>0) twrrProduct*=valEndBrut/valStart;
+      const m=milestones[i+1];
+      const valObs=ubsValAt(m.date);
+      const snapPost=(m.snapPost!==false); // default true
+      const valAvantRachat = snapPost ? valObs+(m.rachat||0) : valObs;
+      const valApresRachat = snapPost ? valObs : valObs-(m.rachat||0);
+      if(startVal>0) twrrProduct*=valAvantRachat/startVal;
+      startVal=valApresRachat;
     }
     return Math.pow(twrrProduct,1/totalAns)-1;
   }
@@ -1940,40 +2074,72 @@ function rendAnnualise(scope){
 }
 
 function rendCompositeUBSFantom(){
-  const rachatsUBS=D.enveloppes.find(e=>e.id==='av_ubs').rachats_documentes||0;
   const ubsSnaps=D.snapshots.filter(s=>s.env==='av_ubs').sort((a,b)=>new Date(a.date)-new Date(b.date));
   const fantomSnaps=D.snapshots.filter(s=>s.env==='av_cnp_fantom').sort((a,b)=>new Date(a.date)-new Date(b.date));
 
-  // Point de départ commun = ouverture FANTOM 2021-09-30
   const fantomFirst=fantomSnaps[0];
   const fantomLast=fantomSnaps[fantomSnaps.length-1];
   if(!fantomFirst||!fantomLast) return {ubs:null,fantom:null,composite:null,ans:null};
 
-  // UBS interpolé au point de départ FANTOM
-  const ubsAtStart=ubsInterpolate(ubsSnaps, fantomFirst.date);
-  // UBS interpolé au point final FANTOM
-  const ubsAtEnd=ubsInterpolate(ubsSnaps, fantomLast.date);
-  if(!ubsAtStart||!ubsAtEnd) return {ubs:null,fantom:null,composite:null,ans:null};
-
   const ans=(new Date(fantomLast.date)-new Date(fantomFirst.date))/(365.25*24*3600*1000);
   if(ans<0.5) return {ubs:null,fantom:null,composite:null,ans:null};
 
-  // Rachats UBS sur toute la période (proportion temporelle jusqu'à fin FANTOM)
-  const ubsFirst=ubsSnaps[0],ubsLast=ubsSnaps[ubsSnaps.length-1];
-  const fracRachats=Math.min(1,(new Date(fantomLast.date)-new Date(ubsFirst.date))/(new Date(ubsLast.date)-new Date(ubsFirst.date)));
-  const rachatsPost=rachatsUBS*fracRachats;
+  // TWRR UBS sur la même période — utilise la même logique de jalons que rendAnnualise('ubs')
+  // mais restreinte à la fenêtre FANTOM
+  const rachats=D.enveloppes.find(e=>e.id==='av_ubs').rachats||[];
+  const arr=ubsSnaps;
 
+  function ubsValAtDate(dateStr){
+    const d=new Date(dateStr).getTime();
+    let before=null, after=null;
+    for(const s of arr){
+      const sd=new Date(s.date).getTime();
+      if(sd<=d) before=s; else if(!after) after=s;
+    }
+    if(!before) return after?after.val:null;
+    if(!after) return before.val;
+    const t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+    return before.val+(after.val-before.val)*t;
+  }
+
+  // Jalons UBS restreints à la fenêtre [fantomFirst, fantomLast]
+  const rachatsEnFenetre=rachats.filter(r=>new Date(r.date)>=new Date(fantomFirst.date)&&new Date(r.date)<=new Date(fantomLast.date));
+  const milestones=[{date:fantomFirst.date,rachat:0,snapPost:true}];
+  rachatsEnFenetre.forEach(r=>milestones.push({date:r.date,rachat:r.montant,snapPost:r.snapPost!==false}));
+  milestones.push({date:fantomLast.date,rachat:0,snapPost:true});
+  milestones.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  let twrrUBS=1;
+  let startVal=ubsValAtDate(milestones[0].date);
+  for(let i=0;i<milestones.length-1;i++){
+    const m=milestones[i+1];
+    const valObs=ubsValAtDate(m.date);
+    const snapPost=(m.snapPost!==false);
+    const valAvant = snapPost ? valObs+(m.rachat||0) : valObs;
+    const valApres = snapPost ? valObs : valObs-(m.rachat||0);
+    if(startVal&&startVal>0) twrrUBS*=valAvant/startVal;
+    startVal=valApres;
+  }
+  const rUBS_ann=Math.pow(twrrUBS,1/ans)-1;
+
+  // TWRR FANTOM simple (pas de flux externes)
+  const rF=fantomLast.val/fantomFirst.val;
+  const rF_ann=Math.pow(rF,1/ans)-1;
+
+  // Pondération initiale (poids fixes à l'ouverture FANTOM)
+  const ubsAtStart=ubsValAtDate(fantomFirst.date)||ubsSnaps[0].val;
   const wUBS=ubsAtStart/(ubsAtStart+fantomFirst.val);
   const wF=1-wUBS;
 
-  const rUBS=(ubsAtEnd+rachatsPost)/ubsAtStart;
-  const rF=fantomLast.val/fantomFirst.val;
-  const rComp=wUBS*rUBS+wF*rF;
+  // Composite : moyenne géométrique pondérée sur la même durée
+  // rendement composite annualisé = (twrrUBS_total^wUBS × twrrF_total^wF)^(1/ans) - 1
+  const rComp_total=Math.pow(twrrUBS,wUBS)*Math.pow(rF,wF);
+  const rComp_ann=Math.pow(rComp_total,1/ans)-1;
 
   return {
-    ubs: Math.pow(rUBS,1/ans)-1,
-    fantom: Math.pow(rF,1/ans)-1,
-    composite: Math.pow(rComp,1/ans)-1,
+    ubs: rUBS_ann,
+    fantom: rF_ann,
+    composite: rComp_ann,
     ans, wUBS, wF,
     startDate:fantomFirst.date, endDate:fantomLast.date
   };
@@ -2143,6 +2309,109 @@ function renderPE(){
   document.getElementById('pe-content').innerHTML=renderPEEnvSection();
 }
 
+// ═══════════════════════════════════════════════════════
+// MANDAT UBS — TWRR avec neutralisation du flux nov. 2022
+// ═══════════════════════════════════════════════════════
+function calcTWRRMandat(){
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(snaps.length<2) return null;
+
+  // Interpolation linéaire sur les snapshots mandat
+  function mandatValAt(dateStr){
+    var d=new Date(dateStr).getTime();
+    var before=null,after=null;
+    for(var i=0;i<snaps.length;i++){
+      var sd=new Date(snaps[i].date).getTime();
+      if(sd<=d) before=snaps[i]; else if(!after) after=snaps[i];
+    }
+    if(!before) return after?after.val:null;
+    if(!after) return before.val;
+    var t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+    return before.val+(after.val-before.val)*t;
+  }
+
+  var first=snaps[0],last=snaps[snaps.length-1];
+  var totalAns=(new Date(last.date)-new Date(first.date))/(365.25*24*3600*1000);
+  if(totalAns<0.5) return null;
+
+  // Jalons : ouverture + dates de flux entrants confirmés + clôture
+  var milestones=[{date:first.date,flux:0}];
+  (M.flux||[]).forEach(function(f){
+    if(new Date(f.date)>new Date(first.date)&&new Date(f.date)<new Date(last.date)){
+      milestones.push({date:f.date,flux:f.montant});
+    }
+  });
+  milestones.push({date:last.date,flux:0});
+  milestones.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+
+  // Produit TWRR sur sous-périodes
+  var twrrProduct=1;
+  for(var i=0;i<milestones.length-1;i++){
+    var valStart=mandatValAt(milestones[i].date);
+    // Valeur de fin de sous-période = valeur observée - flux entrant de cette date
+    // (le flux entrant gonfle la valeur de début de la PROCHAINE sous-période)
+    var valEnd=mandatValAt(milestones[i+1].date);
+    var fluxEntrant=milestones[i+1].flux||0;
+    // TWRR: on neutralise le flux entrant en le soustrayant du numérateur
+    // valEnd avant flux = valEnd - fluxEntrant (valeur générée par la gestion seule)
+    var valEndSansFlux=valEnd-fluxEntrant;
+    if(valStart&&valStart>0) twrrProduct*=valEndSansFlux/valStart;
+  }
+
+  return {
+    twrr: Math.pow(twrrProduct,1/totalAns)-1,
+    twrrTotal: twrrProduct-1,
+    pru: first.val,
+    valFinale: last.val,
+    dateDebut: first.date,
+    dateFin: last.date,
+    ans: totalAns
+  };
+}
+
+function calcFraisMandat(){
+  // Frais mandat estimés = 0,50%/an × valeur moyenne du mandat
+  // Frais AEP = 0,50%/an × valeur enveloppe globale (non isolable)
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(snaps.length<2) return null;
+  var first=snaps[0],last=snaps[snaps.length-1];
+  var totalAns=(new Date(last.date)-new Date(first.date))/(365.25*24*3600*1000);
+  // Valeur moyenne approchée (moyenne arithmétique des snapshots)
+  var moyMandat=snaps.reduce(function(a,s){return a+s.val;},0)/snaps.length;
+  return {
+    fraisMandat_par_an: moyMandat*M.frais_mandat_pct,
+    fraisMandat_total: moyMandat*M.frais_mandat_pct*totalAns,
+    fraisMandatPct: M.frais_mandat_pct,
+    fraisAEPPct: M.frais_aep_pct,
+    fraisTotalPct: M.frais_total_pct,
+    moyMandat: moyMandat,
+    ans: totalAns
+  };
+}
+
+// Interpolation sur MSCI World Acc (base 100 = 13/09/2021)
+function msciAccAt(dateStr){
+  var arr=D.msci_world_acc.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var d=new Date(dateStr).getTime();
+  var before=null,after=null;
+  for(var i=0;i<arr.length;i++){
+    var sd=new Date(arr[i].date).getTime();
+    if(sd<=d) before=arr[i]; else if(!after) after=arr[i];
+  }
+  if(!before) return after?after.val:null;
+  if(!after) return before.val;
+  var t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+  return before.val+(after.val-before.val)*t;
+}
+
+function msciAccTWRR(dateDebut,dateFin){
+  var v0=msciAccAt(dateDebut),v1=msciAccAt(dateFin);
+  if(!v0||!v1) return null;
+  var ans=(new Date(dateFin)-new Date(dateDebut))/(365.25*24*3600*1000);
+  return Math.pow(v1/v0,1/ans)-1;
+}
 
 // ═══════════════════════════════════════════════════════
 // RENDEMENT PAGE
@@ -2188,7 +2457,8 @@ function renderRendement(){
 
   var el=document.getElementById('rendement-content');
   el.innerHTML=
-    '<div class="card">'
+    // ── Bloc 1 : AV UBS vs Lombard ──
+    '<div class="card" style="margin-bottom:15px">'
     +'<div class="card-title">Rendement annualisé vs coût Lombard'
     +'<div style="display:flex;gap:5px">'
     +'<button class="chart-sel-btn perf-scope-btn active" id="pb-ubs" style="font-size:.7rem;padding:3px 9px">AV UBS seule</button>'
@@ -2213,12 +2483,190 @@ function renderRendement(){
     +'<th class="num">Coût Lombard</th><th class="num">Différentiel</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'<div style="margin-top:10px;padding:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.6">'
-    +'ℹ Rendement AV UBS corrigé des rachats ('+eur(rachats)+'). Coût Lombard = Euribor 3M + spread 0,50% estimé. Scope UBS+FANTOM disponible depuis déc. 2023 seulement.'
-    +'</div></div>';
+    +'ℹ Rendement AV UBS corrigé des rachats ('+eur(rachats)+'). Coût Lombard = Euribor 3M + spread 0,50% estimé. Composite UBS+FANTOM : TWRR correct par jalons, pondération géométrique.'
+    +'</div></div>'
+    // ── Bloc 2 : Mandat UBS ──
+    +renderMandatSection();
 
   // Attach click handlers after DOM insertion
   document.getElementById('pb-ubs').onclick=function(){setPerfScope('ubs');};
   document.getElementById('pb-ubs-f').onclick=function(){setPerfScope('ubs_fantom');};
+
+  // Mandat chart (after DOM insertion)
+  setTimeout(function(){ initMandatChart(); }, 80);
+}
+
+function renderMandatSection(){
+  var tw=calcTWRRMandat();
+  var frais=calcFraisMandat();
+  var msciAnn=tw?msciAccTWRR(tw.dateDebut,tw.dateFin):null;
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+
+  var twrrStr=tw?(tw.twrr*100).toFixed(2).replace('.',',')+'&nbsp;%/an':'—';
+  var twrrCol=tw?(tw.twrr>0.04?'var(--green)':tw.twrr>0.02?'var(--orange)':'var(--red)'):'var(--txt2)';
+  var msciStr=msciAnn?(msciAnn*100).toFixed(2).replace('.',',')+'&nbsp;%/an':'—';
+  var msciCol=msciAnn?(msciAnn>0.04?'var(--green)':msciAnn>0?'var(--orange)':'var(--red)'):'var(--txt2)';
+  var alphaVal=tw&&msciAnn?tw.twrr-msciAnn:null;
+  var alphaStr=alphaVal!=null?(alphaVal>=0?'+':'')+(alphaVal*100).toFixed(2).replace('.',',')+'&nbsp;pp':'—';
+  var alphaCol=alphaVal!=null?(alphaVal>=0?'var(--green)':'var(--red)'):'var(--txt2)';
+
+  // Frais estimés mandat
+  var fraisAnnStr=frais?eur(Math.round(frais.fraisMandat_par_an)):'—';
+  var fraisTotStr=frais?eur(Math.round(frais.fraisMandat_total)):'—';
+
+  // PnL brut
+  var pnlBrut=tw?tw.valFinale-tw.pru:null;
+  var pnlFlux=M.flux.reduce(function(a,f){return a+f.montant;},0);
+  var pnlNet=pnlBrut!=null?tw.valFinale-(tw.pru+pnlFlux):null;
+  var pnlBrutStr=pnlBrut!=null?(pnlBrut>=0?'+':'')+eur(Math.round(pnlBrut)):' —';
+  var pnlNetStr=pnlNet!=null?(pnlNet>=0?'+':'')+eur(Math.round(pnlNet)):' —';
+
+  // Table des snapshots
+  var snapRows='';
+  snaps.forEach(function(s,i){
+    if(i===0) return; // skip premier
+    var prev=snaps[i-1];
+    var delta=s.val-prev.val;
+    var fluxPeriode=M.flux.filter(function(f){return new Date(f.date)>new Date(prev.date)&&new Date(f.date)<=new Date(s.date);}).reduce(function(a,f){return a+f.montant;},0);
+    var perfNette=delta-fluxPeriode;
+    var sign=perfNette>=0?'+':'';
+    var cl=perfNette>=0?'pos':'neg';
+    snapRows+='<tr>'
+      +'<td class="muted">'+fd(prev.date)+' → '+fd(s.date)+'</td>'
+      +'<td class="num bold">'+eur(s.val)+'</td>'
+      +(fluxPeriode?'<td class="num" style="color:var(--cyan)">+'+eur(fluxPeriode)+'</td>':'<td class="num muted">—</td>')
+      +'<td class="num '+cl+'">'+sign+eur(Math.round(perfNette))+'</td>'
+      +'<td class="muted" style="font-size:.68rem">'+s.src+'</td>'
+      +'</tr>';
+  });
+
+  // Warning flux non confirmé
+  var fluxWarn='';
+  var fluxNonConf=M.flux.filter(function(f){return !f.confirme;});
+  if(fluxNonConf.length){
+    fluxWarn='<div class="alert-warn" style="font-size:.72rem;margin-top:8px">'
+      +'⚠ Flux non confirmé : transfert de '+eur(fluxNonConf[0].montant)+' ('+fd(fluxNonConf[0].date)+') — '+fluxNonConf[0].note+'<br>'
+      +'Date et valeur pré-transfert à confirmer avec l\'AEP Q3 2022. Impact sur TWRR : '
+      +'neutralisé dans le calcul, mais la valeur interpolée au '+fd(fluxNonConf[0].date)+' est une estimation.'
+      +'</div>';
+  }
+
+  return '<div class="card" style="margin-top:15px">'
+    // En-tête
+    +'<div class="card-title" style="margin-bottom:4px">'
+    +'<span>⊕ Mandat UBS — Performance isolée</span>'
+    +'<span style="font-size:.71rem;font-weight:400;color:var(--txt3)">TWRR · sept. 2021 → avr. 2026</span>'
+    +'</div>'
+    +'<div style="font-size:.71rem;color:var(--txt3);margin-bottom:14px;font-family:\'DM Mono\',monospace">'
+    +'Gestion active 55 lignes — frais 1,00%/an (0,50% mandat + 0,50% AEP) — pas de flux externe depuis ouverture sauf arbitrage nov. 2022'
+    +'</div>'
+
+    // KPIs
+    +'<div class="tri-box" style="margin-bottom:16px;grid-template-columns:repeat(4,1fr)">'
+    +'<div class="tri-item"><label>TWRR annualisé</label>'
+    +'<div class="val" style="color:'+twrrCol+'">'+twrrStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">net frais mandat, brut frais AEP</small></div>'
+    +'<div class="tri-item"><label>MSCI World Acc (€)</label>'
+    +'<div class="val" style="color:'+msciCol+'">'+msciStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">même période · NTR non hedgé</small></div>'
+    +'<div class="tri-item"><label>Alpha vs MSCI</label>'
+    +'<div class="val" style="color:'+alphaCol+'">'+alphaStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">positif = surperformance mandat</small></div>'
+    +'<div class="tri-item"><label>P&L net de flux</label>'
+    +'<div class="val" style="color:'+(pnlNet>=0?'var(--green)':'var(--red)')+'">'+pnlNetStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">sur '+(tw?tw.pru:0+pnlFlux|0)+' € investis</small></div>'
+    +'</div>'
+
+    // Graphique
+    +'<div style="position:relative;height:230px;margin-bottom:16px"><canvas id="chart-mandat"></canvas></div>'
+    +fluxWarn
+
+    // Frais estimés
+    +'<div class="sec-title" style="font-size:.82rem;margin:14px 0 8px">Frais mandat estimés</div>'
+    +'<div class="grid-2" style="gap:10px;margin-bottom:12px">'
+    +'<div style="background:var(--bg3);border-radius:8px;padding:12px">'
+    +'<div style="font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Frais mandat UBS (0,50%/an)</div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:1.05rem;font-weight:700;color:var(--orange)">'+fraisAnnStr+'/an</div>'
+    +'<div style="font-size:.7rem;color:var(--txt3);margin-top:3px">Total estimé période : '+fraisTotStr+'</div>'
+    +'<div style="font-size:.68rem;color:var(--txt3);margin-top:2px">Déjà inclus dans les valorisations AEP (prélevés en continu)</div>'
+    +'</div>'
+    +'<div style="background:var(--bg3);border-radius:8px;padding:12px">'
+    +'<div style="font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Frais AEP Cardif (0,50%/an enveloppe)</div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:1.05rem;font-weight:700;color:var(--orange)">Non isolables</div>'
+    +'<div style="font-size:.7rem;color:var(--txt3);margin-top:3px">Prélevés sur AV UBS globale (~'+(frais?eur(Math.round(valEnv('av_ubs')*0.005)):' —')+'/an)</div>'
+    +'<div style="font-size:.68rem;color:var(--txt3);margin-top:2px">Impact performance mandat : ~-0,50%/an supplémentaire</div>'
+    +'</div>'
+    +'</div>'
+
+    // Table snapshots
+    +'<div class="sec-title" style="font-size:.82rem;margin-bottom:8px">Valorisations trimestrielles</div>'
+    +'<table class="tbl"><thead><tr>'
+    +'<th>Période</th><th class="num">Valeur fin</th><th class="num">Flux entrant</th>'
+    +'<th class="num">Perf. nette flux</th><th>Source</th>'
+    +'</tr></thead><tbody>'+snapRows+'</tbody></table>'
+
+    // Note méthodologique
+    +'<div style="margin-top:12px;padding:8px 10px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.7">'
+    +'<strong style="color:var(--txt2)">Méthodologie TWRR</strong> — '
+    +M.note_twrr+'<br>'
+    +'<strong style="color:var(--txt2)">Frais</strong> — '+M.note_frais+'<br>'
+    +'<strong style="color:var(--txt2)">MSCI World Acc</strong> — Valeurs reconstituées NTR EUR non hedgé (base 100 = 13/09/2021). À affiner avec cours exacts iShares MSCI World (IE00B4L5Y983) sur Morningstar/justETF. '
+    +'<strong style="color:var(--orange)">⚠ L\'alpha vs MSCI est à relativiser</strong> : le mandat UBS est une gestion diversifiée multi-actifs (actions + obligations + structurés) avec un beta &lt; 1 — le MSCI World 100% actions n\'est pas le benchmark naturel. '
+    +'Un 50/50 MSCI World / Bloomberg Aggregate EUR serait plus pertinent. La sous-performance est réelle mais partiellement expliquée par l\'allocation défensive.'
+    +'</div>'
+    +'</div>';
+}
+
+function initMandatChart(){
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(!snaps.length) return;
+
+  var labels=snaps.map(function(s){return fdm(s.date);});
+  var mandatData=snaps.map(function(s){return (s.val/snaps[0].val*100).toFixed(2)*1;});
+
+  // MSCI World Acc base 100 aux mêmes dates
+  var msciData=snaps.map(function(s){return msciAccAt(s.date);});
+
+  // Coût cumulé Lombard (depuis date ouverture mandat) base 100
+  var t0=new Date(snaps[0].date).getTime();
+  var lombData=snaps.map(function(s){
+    var ans=(new Date(s.date).getTime()-t0)/(365.25*24*3600*1000);
+    var euribor=getEuribor(s.date);
+    return 100*Math.pow(1+euribor+SPREAD,ans);
+  });
+
+  // Frais mandat cumulés : base 100 - (1%/an en continu)
+  var fraisData=snaps.map(function(s){
+    var ans=(new Date(s.date).getTime()-t0)/(365.25*24*3600*1000);
+    return 100*Math.pow(1-D.mandat.frais_total_pct,ans);
+  });
+
+  destroyChart('mandat');
+  var ctx=document.getElementById('chart-mandat');
+  if(!ctx) return;
+  _charts['mandat']=new Chart(ctx.getContext('2d'),{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {label:'Mandat UBS (base 100)',data:mandatData,borderColor:'#C9A84C',borderWidth:2.5,backgroundColor:'rgba(201,168,76,0.12)',fill:true,pointRadius:4,pointBackgroundColor:'#C9A84C',tension:0.3},
+      {label:'MSCI World Acc €',data:msciData,borderColor:'#F472B6',borderWidth:1.8,borderDash:[5,3],fill:false,pointRadius:3,pointBackgroundColor:'#F472B6',tension:0.3},
+      {label:'Coût Lombard (Euribor+0,50%)',data:lombData,borderColor:'#F06B6B',borderWidth:1.2,borderDash:[3,4],fill:false,pointRadius:0,tension:0.3},
+      {label:'Traînée frais (1,00%/an)',data:fraisData,borderColor:'#F59340',borderWidth:1,borderDash:[2,5],fill:false,pointRadius:0,tension:0.3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,labels:{color:'#8891A8',font:{size:9},boxWidth:10}},
+        tooltip:{backgroundColor:'#1A1E2A',titleColor:'#8891A8',bodyColor:'#E8ECF4',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+          callbacks:{label:function(c){return c.dataset.label+' : '+c.raw.toFixed(1)+' (base 100)';}}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9},callback:function(v){return v.toFixed(0);}},
+          title:{display:true,text:'Base 100 (sept. 2021)',color:'#4F5870',font:{size:9}}}
+      }
+    }
+  });
 }
 
 
@@ -2531,6 +2979,134 @@ document.addEventListener('click', function(ev){
   const backBtn = ev.target.closest('#back-to-envs');
   if(backBtn){ nav('enveloppes'); }
 });
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR MOBILE TOGGLE
+// ═══════════════════════════════════════════════════════
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  const btn=document.getElementById('hamburger-btn');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('active',open);
+  btn.setAttribute('aria-expanded',open);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+}
+// Close sidebar on nav item click (mobile)
+document.getElementById('sidebar').addEventListener('click',function(e){
+  if(e.target.closest('.sb-item')){
+    if(window.innerWidth<=900) closeSidebar();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// PWA — MANIFEST INLINE + SERVICE WORKER
+// ═══════════════════════════════════════════════════════
+(function initPWA(){
+  // ── Génération de l'icône SVG (logo FinLOLO) ──
+  const iconSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="100" fill="#0A0C10"/>
+    <rect x="60" y="60" width="392" height="392" rx="70" fill="#0F1117"/>
+    <text x="256" y="310" font-family="Georgia,serif" font-size="220" font-weight="bold"
+      fill="#C9A84C" text-anchor="middle">F</text>
+    <rect x="80" y="400" width="352" height="3" rx="2" fill="#C9A84C" opacity=".4"/>
+    <text x="256" y="460" font-family="monospace" font-size="48" fill="#4A9EFF"
+      text-anchor="middle" opacity=".9">PATRIMOINE</text>
+  </svg>`;
+  const iconBlob=new Blob([iconSVG],{type:'image/svg+xml'});
+  const iconURL=URL.createObjectURL(iconBlob);
+
+  // ── Manifest ──
+  const manifest={
+    name:'FinLOLO — Patrimoine privé',
+    short_name:'FinLOLO',
+    description:'Gestion patrimoniale privée de Laurent Roussel',
+    start_url:'./',
+    display:'standalone',
+    background_color:'#0A0C10',
+    theme_color:'#0A0C10',
+    orientation:'portrait-primary',
+    icons:[
+      {src:iconURL,sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},
+      {src:iconURL,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}
+    ]
+  };
+  const manifestBlob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const manifestURL=URL.createObjectURL(manifestBlob);
+  const link=document.createElement('link');
+  link.rel='manifest';link.href=manifestURL;
+  document.head.appendChild(link);
+
+  // Apple touch icon
+  const appleLink=document.createElement('link');
+  appleLink.rel='apple-touch-icon';appleLink.href=iconURL;
+  document.head.appendChild(appleLink);
+
+  // Favicon
+  const favicon=document.createElement('link');
+  favicon.rel='icon';favicon.type='image/svg+xml';favicon.href=iconURL;
+  document.head.appendChild(favicon);
+
+  // ── Service Worker (inline via blob) ──
+  if('serviceWorker' in navigator){
+    const CACHE='finlolo-v3';
+    const ASSETS=[
+      'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js',
+      'https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap'
+    ];
+    const swCode=`
+const CACHE='${CACHE}';
+const ASSETS=${JSON.stringify(ASSETS)};
+
+self.addEventListener('install',e=>{
+  e.waitUntil(
+    caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>{}))
+    .then(()=>self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate',e=>{
+  e.waitUntil(
+    caches.keys().then(keys=>Promise.all(
+      keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
+    )).then(()=>self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch',e=>{
+  // Cache-first pour les assets externes (Chart.js, fonts)
+  // Network-first pour le document HTML lui-même
+  const req=e.request;
+  if(req.mode==='navigate'){
+    e.respondWith(
+      fetch(req).catch(()=>caches.match(req))
+    );
+    return;
+  }
+  e.respondWith(
+    caches.match(req).then(cached=>{
+      if(cached) return cached;
+      return fetch(req).then(res=>{
+        if(res&&res.status===200&&res.type!=='opaque'){
+          const clone=res.clone();
+          caches.open(CACHE).then(c=>c.put(req,clone));
+        }
+        return res;
+      }).catch(()=>cached);
+    })
+  );
+});
+`;
+    const swBlob=new Blob([swCode],{type:'application/javascript'});
+    const swURL=URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swURL,{scope:'./'})
+      .then(()=>console.log('[FinLOLO] Service Worker enregistré'))
+      .catch(e=>console.warn('[FinLOLO] SW non enregistré:',e));
+  }
+})();
 </script>
 </body>
 </html>
