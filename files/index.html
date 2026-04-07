@@ -1,0 +1,3019 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0C10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinLOLO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="FinLOLO — Gestion patrimoniale privée">
+<title>FinLOLO — Patrimoine privé</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0A0C10;--bg1:#0F1117;--bg2:#141720;--bg3:#1A1E2A;--bg4:#1F2435;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.10);
+  --txt:#E8ECF4;--txt2:#8891A8;--txt3:#4F5870;
+  --accent:#C9A84C;--accent2:#E8C96A;
+  --blue:#4A9EFF;--purple:#9B7FFC;--green:#2ECC8A;--red:#F06B6B;
+  --orange:#F59340;--cyan:#22C8E0;--gold:#C9A84C;--pink:#F472B6;
+  --sidebar-w:220px;--r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:DM Sans,sans-serif;min-height:100vh;overflow-x:hidden}
+button{border:none;background:none;cursor:pointer;font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;padding:0 0 60px}
+
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sb-logo-name{font-family:Syne,sans-serif;font-weight:700;font-size:1.1rem;color:var(--accent2)}
+.sb-logo-sub{font-size:.7rem;color:var(--txt3);margin-top:2px;font-family:DM Mono,monospace}
+.sb-section{padding:16px 10px 4px}
+.sb-label{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);padding:0 8px;margin-bottom:5px;font-family:DM Mono,monospace}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:.83rem;color:var(--txt2);transition:.15s;margin-bottom:1px}
+.sb-item:hover{background:var(--bg3);color:var(--txt)}
+.sb-item.active{background:var(--bg3);color:var(--txt);font-weight:600}
+.sb-item.active .sb-dot{opacity:1}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:0;flex-shrink:0;transition:.15s}
+.sb-icon{width:16px;text-align:center;font-size:.8rem;opacity:.7}
+.sb-sub{padding-left:26px}
+.sb-sub .sb-item{font-size:.79rem;padding:5px 8px}
+.sb-sub-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sb-bottom{margin-top:auto;padding:14px 10px;border-top:1px solid var(--border)}
+.sb-export-btn{width:100%;padding:7px 12px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--txt2);font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
+.sb-export-btn:hover{background:var(--bg3);color:var(--txt)}
+
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,12,16,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-family:Syne,sans-serif;font-size:.95rem;font-weight:600}
+.topbar-date{font-family:DM Mono,monospace;font-size:.72rem;color:var(--txt3)}
+.topbar-badge{display:flex;align-items:center;gap:6px;padding:3px 9px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:20px;font-size:.71rem;color:var(--gold)}
+.topbar-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold)}
+
+.page{display:none;padding:26px}
+.page.active{display:block;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:22px}
+.kpi{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:15px 17px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kpi-color,var(--blue));opacity:.6}
+.kpi-label{font-size:.68rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;font-family:DM Mono,monospace}
+.kpi-value{font-family:Syne,sans-serif;font-size:1.38rem;font-weight:700;line-height:1}
+.kpi-sub{font-size:.71rem;color:var(--txt3);margin-top:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+
+/* BADGES */
+.bp{color:var(--green);background:rgba(46,204,138,.12);padding:1px 6px;border-radius:4px;font-size:.69rem;font-family:DM Mono,monospace}
+.bn{color:var(--red);background:rgba(240,107,107,.12);padding:1px 6px;border-radius:4px;font-size:.69rem;font-family:DM Mono,monospace}
+.bw{color:var(--orange);background:rgba(245,147,64,.12);padding:1px 6px;border-radius:4px;font-size:.69rem;font-family:DM Mono,monospace}
+.bg-ok{color:var(--green);background:rgba(46,204,138,.12);padding:1px 6px;border-radius:4px;font-size:.69rem;font-family:DM Mono,monospace}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:15px}
+.col2{grid-column:span 2}
+
+/* CARDS */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.card-title{font-family:Syne,sans-serif;font-size:.88rem;font-weight:600;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title-link{font-size:.75rem;color:var(--blue);cursor:pointer;font-weight:400;white-space:nowrap}
+
+/* CHARTS */
+.chart-wrap canvas{max-height:200px}
+
+/* ENV CARDS */
+.env-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:22px}
+.env-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:15px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.env-card:hover{border-color:var(--border2);background:var(--bg2);transform:translateY(-1px)}
+.env-card-header{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.env-card-name{font-weight:600;font-size:.85rem}
+.env-card-type{font-size:.68rem;color:var(--txt3);font-family:DM Mono,monospace}
+.env-card-value{font-family:Syne,sans-serif;font-size:1.18rem;font-weight:700;margin-bottom:3px}
+.env-card-meta{font-size:.7rem;color:var(--txt3);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.env-card-prog{height:2px;background:var(--bg4);border-radius:2px;margin-top:9px}
+.env-card-prog-fill{height:100%;border-radius:2px}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:3px;font-size:.63rem;font-family:DM Mono,monospace}
+.tag-nanti{background:rgba(240,107,107,.1);color:var(--red);border:1px solid rgba(240,107,107,.2)}
+.tag-demem{background:rgba(155,127,252,.1);color:var(--purple);border:1px solid rgba(155,127,252,.2)}
+.tag-pe{background:rgba(245,147,64,.1);color:var(--orange);border:1px solid rgba(245,147,64,.2)}
+.pnl-badge{font-size:.75rem;font-family:DM Mono,monospace}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:.81rem}
+.tbl th{text-align:left;padding:7px 11px;font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);border-bottom:1px solid var(--border);font-family:DM Mono,monospace;font-weight:500}
+.tbl td{padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--txt2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02);color:var(--txt)}
+.num{font-family:DM Mono,monospace;text-align:right}
+.bold{font-weight:600;color:var(--txt)}
+.pos{color:var(--green);font-family:DM Mono,monospace}
+.neg{color:var(--red);font-family:DM Mono,monospace}
+.muted{color:var(--txt3)}
+
+/* STATUS */
+.status{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-size:.67rem;font-family:DM Mono,monospace;font-weight:500}
+.s-ec{background:rgba(74,158,255,.12);color:var(--blue)}
+.s-re{background:rgba(46,204,138,.12);color:var(--green)}
+.s-ec::before,.s-re::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+
+/* STRUCT CARD */
+.sc{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;transition:.2s;position:relative;overflow:hidden;margin-bottom:9px}
+.sc:hover{border-color:var(--border2)}
+.sc-bar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.sc-name{font-weight:600;font-size:.84rem;line-height:1.3;margin-bottom:6px}
+.sc-meta{display:flex;gap:8px;font-size:.71rem;color:var(--txt3);flex-wrap:wrap;margin-bottom:8px}
+.sc-vals{display:flex;gap:14px;flex-wrap:wrap}
+.sc-vb{display:flex;flex-direction:column;gap:1px}
+.sc-vl{font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;font-family:DM Mono,monospace}
+.sc-vv{font-family:Syne,sans-serif;font-weight:600;font-size:.9rem}
+.isin{font-family:DM Mono,monospace;font-size:.67rem;color:var(--txt3);background:var(--bg3);padding:1px 5px;border-radius:3px}
+.coupon-tag{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.2);padding:2px 6px;border-radius:4px;font-size:.67rem;font-family:DM Mono,monospace}
+
+/* LOMBARD */
+.ltv-bg{height:7px;background:var(--bg4);border-radius:7px;overflow:hidden;position:relative}
+.ltv-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,var(--green),var(--green) 50%,var(--orange) 65%,var(--red) 80%);position:absolute;top:0;left:0;transition:width .6s}
+.ltv-seuil{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--orange);opacity:.7}
+.ltv-zones{display:flex;justify-content:space-between;font-size:.66rem;color:var(--txt3);font-family:DM Mono,monospace;margin-top:4px}
+.prog-bar{height:5px;background:var(--bg4);border-radius:5px;overflow:hidden;margin:5px 0}
+.prog-fill{height:100%;border-radius:5px}
+
+/* FRAIS */
+.frais-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.81rem}
+.frais-row:last-child{border-bottom:none}
+
+/* PE CELLS */
+.pe-grid{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:10px 0}
+.pe-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-family:DM Mono,monospace;font-weight:600;cursor:default;position:relative;transition:.15s}
+.pe-cell.done{background:rgba(74,158,255,.25);color:var(--blue);border:1px solid rgba(74,158,255,.3)}
+.pe-cell.pending{background:var(--bg4);color:var(--txt3);border:1px solid var(--border)}
+.pe-cell.done:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--txt);padding:3px 7px;border-radius:5px;font-size:.63rem;white-space:nowrap;border:1px solid var(--border2);z-index:10}
+
+/* SECTION */
+.sec-title{font-family:Syne,sans-serif;font-size:.95rem;font-weight:600;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.sec-sub{font-size:.78rem;color:var(--txt3);font-weight:400;margin-left:auto}
+.divider{height:1px;background:var(--border);margin:18px 0}
+
+/* TIMELINE */
+.tl-wrap{position:relative;padding-left:20px}
+.tl-wrap::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-dot{position:absolute;left:-17px;top:4px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg1);flex-shrink:0}
+.tl-date{font-family:DM Mono,monospace;font-size:.68rem;color:var(--txt3);margin-bottom:2px}
+.tl-name{font-size:.82rem;font-weight:600;line-height:1.3}
+.tl-desc{font-size:.75rem;color:var(--txt3);margin-top:2px}
+.tl-month{font-family:Syne,sans-serif;font-size:.78rem;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;padding:8px 0 4px;border-top:1px solid var(--border);margin-top:6px}
+
+/* CHART SELECTOR */
+.chart-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chart-sel-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;font-size:.75rem;color:var(--txt3);cursor:pointer;transition:.15s;font-family:DM Mono,monospace}
+.chart-sel-btn.active{border-color:var(--border2);color:var(--txt);background:var(--bg3)}
+.chart-sel-btn .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* BACK BTN */
+.back-btn{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--txt3);padding:5px 9px;border-radius:6px;border:1px solid var(--border);transition:.15s;margin-bottom:14px;cursor:pointer;width:fit-content}
+.back-btn:hover{background:var(--bg2);color:var(--txt)}
+
+/* STRATEGIE */
+.strat-zone{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.strat-zone-title{font-family:Syne,sans-serif;font-weight:600;font-size:.9rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.alert-card{padding:12px 15px;border-radius:8px;margin-bottom:10px;font-size:.82rem;line-height:1.6}
+.alert-warn{background:rgba(245,147,64,.08);border:1px solid rgba(245,147,64,.2);color:var(--orange)}
+.alert-info{background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.2);color:var(--blue)}
+.alert-ok{background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2);color:var(--green)}
+.alert-danger{background:rgba(240,107,107,.08);border:1px solid rgba(240,107,107,.2);color:var(--red)}
+
+/* TRI */
+.tri-box{background:var(--bg3);border-radius:8px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tri-item label{font-size:.65rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;font-family:DM Mono,monospace;display:block;margin-bottom:3px}
+.tri-item .val{font-family:Syne,sans-serif;font-weight:700;font-size:1.1rem}
+
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;border-radius:6px;background:transparent;border:none;z-index:200}
+.hamburger span{width:20px;height:2px;background:var(--txt2);border-radius:2px;transition:.2s}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(2px)}
+.sidebar-overlay.active{display:block}
+
+/* RESPONSIVE MOBILE */
+@media(max-width:900px){
+  :root{--sidebar-w:240px}
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    transform:translateX(-100%);
+    transition:transform .25s cubic-bezier(.4,0,.2,1);
+    z-index:100;
+    width:var(--sidebar-w);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .topbar{padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top))}
+  .kpi-strip{grid-template-columns:1fr 1fr}
+  .env-grid{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-2-1,.grid-3{grid-template-columns:1fr}
+  .col2{grid-column:span 1}
+  .tri-box{grid-template-columns:1fr 1fr}
+  .page{padding:16px}
+  .kpi-value{font-size:1.1rem}
+  .chart-wrap canvas{max-height:160px}
+}
+@media(max-width:480px){
+  .kpi-strip{grid-template-columns:1fr 1fr}
+  .env-grid{grid-template-columns:1fr}
+  .tri-box{grid-template-columns:1fr 1fr}
+  .page{padding:12px}
+}
+
+/* PWA safe areas (iPhone notch / Dynamic Island) */
+.shell{padding-top:env(safe-area-inset-top)}
+.topbar{padding-left:max(26px, env(safe-area-inset-left));padding-right:max(26px, env(safe-area-inset-right))}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="shell">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-name">FinLOLO</div>
+    <div class="sb-logo-sub">Patrimoine privé</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Vue d'ensemble</div>
+    <div class="sb-item active" onclick="nav('dashboard')" data-page="dashboard"><span class="sb-dot"></span><span class="sb-icon">◈</span> Dashboard</div>
+    <div class="sb-item" onclick="nav('timeline')" data-page="timeline"><span class="sb-dot"></span><span class="sb-icon">◷</span> Calendrier</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Enveloppes</div>
+    <div class="sb-item" onclick="nav('enveloppes')" data-page="enveloppes"><span class="sb-dot"></span><span class="sb-icon">🏦</span> Toutes</div>
+    <div class="sb-sub" id="sb-envs"></div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Outils</div>
+    <div class="sb-item" onclick="nav('structures')" data-page="structures"><span class="sb-dot"></span><span class="sb-icon">◫</span> Structurés</div>
+    <div class="sb-item" onclick="nav('lombard')" data-page="lombard"><span class="sb-dot"></span><span class="sb-icon">⬡</span> Crédit Lombard</div>
+    <div class="sb-item" onclick="nav('pe')" data-page="pe"><span class="sb-dot"></span><span class="sb-icon">△</span> Private Equity</div>
+    <div class="sb-item" onclick="nav('frais')" data-page="frais"><span class="sb-dot"></span><span class="sb-icon">≋</span> Frais</div>
+    <div class="sb-item" onclick="nav('rendement')" data-page="rendement"><span class="sb-dot"></span><span class="sb-icon">◐</span> Rendement</div>
+    <div class="sb-item" onclick="nav('strategie')" data-page="strategie"><span class="sb-dot"></span><span class="sb-icon">◉</span> Stratégie</div>
+  </div>
+  <div class="sb-bottom">
+    <button class="sb-export-btn" onclick="exportJSON()"><span>↑</span> Export JSON</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="topbar-badge" id="topbar-ltv"></div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-strip" id="kpi-strip"></div>
+    <div class="grid-2-1" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-title">
+          Évolution du patrimoine
+          <div style="display:flex;gap:5px" id="chart-multi-btns"></div>
+        </div>
+        <div class="chart-sel" id="chart-env-sel"></div>
+        <div class="chart-wrap"><canvas id="chart-multi"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Allocation</div>
+        <div style="display:flex;justify-content:center"><canvas id="chart-donut" style="max-height:175px;max-width:175px"></canvas></div>
+        <div id="donut-legend" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="sec-title" style="margin-bottom:10px">Enveloppes <span class="sec-sub" onclick="nav('enveloppes')" style="cursor:pointer;color:var(--blue)">Voir toutes →</span></div>
+    <div class="env-grid" id="dash-env-cards"></div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="card-title">Structurés actifs <span class="card-title-link" onclick="nav('structures')">Voir tous →</span></div>
+        <div id="dash-structs"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Crédit Lombard <span class="card-title-link" onclick="nav('lombard')">Détail →</span></div>
+        <div id="dash-lombard"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Private Equity <span class="card-title-link" onclick="nav('pe')">Détail →</span></div>
+        <div id="dash-pe"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Frais AV UBS <span class="card-title-link" onclick="nav('frais')">Détail →</span></div>
+        <div id="dash-frais"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="page" id="page-timeline">
+    <div style="padding:20px 26px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div class="sec-title" style="font-size:1.05rem;margin:0">Calendrier financier</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="chart-sel-btn" id="cal-prev" style="padding:5px 12px;font-size:.8rem">‹</button>
+        <div id="cal-month-label" style="font-family:'Syne',sans-serif;font-weight:600;min-width:160px;text-align:center;font-size:.95rem"></div>
+        <button class="chart-sel-btn" id="cal-next" style="padding:5px 12px;font-size:.8rem">›</button>
+        <button class="chart-sel-btn active" id="cal-today" style="padding:5px 10px;font-size:.75rem">Aujourd'hui</button>
+      </div>
+    </div>
+    <!-- Legend -->
+    <div id="cal-legend" style="padding:8px 26px;display:flex;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border)"></div>
+    <!-- Calendar grid -->
+    <div style="padding:16px 26px">
+      <div id="cal-grid"></div>
+    </div>
+    <!-- Event list for selected day -->
+    <div id="cal-day-detail" style="padding:0 26px 26px"></div>
+  </div>
+
+  <!-- ENVELOPPES LIST -->
+  <div class="page" id="page-enveloppes">
+    <div class="sec-title" style="font-size:1.05rem;margin-bottom:18px">Toutes les enveloppes</div>
+    <div class="env-grid" id="all-env-cards"></div>
+  </div>
+
+  <!-- ENV DETAIL -->
+  <div class="page" id="page-env-detail">
+    <div id="env-detail-content"></div>
+  </div>
+
+  <!-- STRUCTURÉS -->
+  <div class="page" id="page-structures">
+    <div class="sec-title" style="font-size:1.05rem;margin-bottom:6px">Produits structurés</div>
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap" id="struct-kpis"></div>
+    <div class="sec-title">En cours <span id="cnt-ec" class="sec-sub"></span></div>
+    <div id="structs-ec" style="margin-bottom:22px"></div>
+    <div class="sec-title">Remboursés <span id="cnt-re" class="sec-sub"></span></div>
+    <div id="structs-re"></div>
+  </div>
+
+  <!-- LOMBARD -->
+  <div class="page" id="page-lombard">
+    <div class="sec-title" style="font-size:1.05rem;margin-bottom:18px">Crédit Lombard</div>
+    <div id="lombard-content"></div>
+  </div>
+
+  <!-- PE -->
+  <div class="page" id="page-pe">
+    <div class="sec-title" style="font-size:1.05rem;margin-bottom:18px">Private Equity</div>
+    <div id="pe-content"></div>
+  </div>
+
+  <!-- FRAIS -->
+  <div class="page" id="page-frais">
+    <div class="sec-title" style="font-size:1.05rem;margin-bottom:18px">Frais de gestion</div>
+    <div id="frais-content"></div>
+  </div>
+
+  <!-- STRATEGIE -->
+  <div class="page" id="page-rendement">
+    <div style="padding:26px">
+      <div class="sec-title" style="font-size:1.05rem;margin-bottom:18px">Rendement du portefeuille</div>
+      <div id="rendement-content"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-strategie">
+    <div class="sec-title" style="font-size:1.05rem;margin-bottom:18px">Stratégie & Allocation</div>
+    <div id="strat-content"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const D = {
+  enveloppes:[
+    {id:"av_ubs",nom:"AV UBS Multi-Opportunités Vie 2",court:"AV UBS",type:"assurance_vie",assureur:"Cardif (AEP – BNP Paribas Cardif)",courtier:"UBS France SA",numero:"182000187",ouverture:"2021-09-13",nanti:true,demembre:false,couleur:"#4A9EFF",icone:"🏦",
+      pru:1300000,
+      // Rachats documentés (sorties d'épargne liées au remboursement Lombard — à exclure du calcul de performance)
+      rachats_documentes:385818, // 38077+84520+49872+61526+101823+50000
+      rachats:[
+        {date:"2023-02-28",montant:38077, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff déc22→fév23 = -38077 exact)"},
+        {date:"2023-04-30",montant:84520, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap interpolé, supposé POST"},
+        {date:"2023-09-30",montant:49872, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap interpolé, supposé POST"},
+        {date:"2024-04-30",montant:61526, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff mars24→avr24 ≈ rachat)"},
+        {date:"2025-03-31",montant:101823,snapPost:false,note:"Rachat AV UBS → Remb. Lombard — snap PRÉ-rachat (baisse avr25 = rachat + perf)"},
+        {date:"2026-02-28",montant:50000, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff jan26→fév26 ≈ rachat)"}
+      ],
+      rachats_note:"Rachats AV UBS documentés — 6 virements confirmés."},
+    {id:"av_cnp_fantom",nom:"CNP One Capi — FANTOM",court:"AV FANTOM",type:"assurance_vie",assureur:"CNP Patrimoine",courtier:"UBS France N°CNP014011",numero:"A7A001415",ouverture:"2021-11-26",nanti:true,nanti_detail:"Co-nanti avec AV UBS — Lombard N°5033576",demembre:true,demembre_detail:{np:"Tom Roussel",us:"Laurent Roussel"},couleur:"#9B7FFC",icone:"🔵",
+      pru:400000},
+    {id:"pea_fortuneo",nom:"PEA Fortuneo",court:"PEA",type:"pea",courtier:"Fortuneo",nanti:false,demembre:false,couleur:"#2ECC8A",icone:"📈",
+      pru:22753},
+    {id:"av_bnp",nom:"AV BNP Paribas",court:"AV BNP",type:"assurance_vie",assureur:"BNP Paribas",courtier:"BNP Paribas",nanti:false,demembre:false,couleur:"#22C8E0",icone:"🏛️",
+      pru:120000},
+    {id:"av_finary",nom:"Finary Life",court:"Finary Life",type:"assurance_vie",assureur:"Finary",courtier:"Finary",nanti:false,demembre:false,couleur:"#F59340",icone:"🌱",
+      pru:3285},
+    {id:"pe_global_strategies",nom:"Global Strategies 2021 SLP",court:"PE Global Strategies",type:"pe_fonds",gestionnaire:"Equitis Gestion",depositaire:"Société Générale",isin:"FR0014001X77",souscription:"2021-03-24",nanti:false,demembre:false,couleur:"#F97316",icone:"🏗️",
+      pru:null, // PRU non pertinent pour PE — utiliser MOIC/TRI à la place
+      pe_note:"Valorisation figée au 30/06/2023. MOIC et TRI calculés sur flux datés."}
+  ],
+
+  snapshots:[
+    // AV UBS — historique mensuel complet (source: tableur UBS EVO MENSUEL, photos IMG_0545-0546)
+    // Ouverture 13/09/2021 à 1 300 000€. Rachats documentés : 385 818€ au total.
+    {date:"2021-09-13",env:"av_ubs",val:1300000},
+    {date:"2021-10-31",env:"av_ubs",val:1293445},
+    {date:"2021-11-30",env:"av_ubs",val:1293227},
+    {date:"2021-12-31",env:"av_ubs",val:1282798},
+    {date:"2022-01-31",env:"av_ubs",val:1278353},
+    {date:"2022-02-28",env:"av_ubs",val:1269490},
+    {date:"2022-03-31",env:"av_ubs",val:1271277},
+    {date:"2022-04-30",env:"av_ubs",val:1255004},
+    {date:"2022-05-31",env:"av_ubs",val:1253641},
+    {date:"2022-06-30",env:"av_ubs",val:1224507},
+    {date:"2022-07-31",env:"av_ubs",val:1237450},
+    {date:"2022-08-31",env:"av_ubs",val:1265388},
+    {date:"2022-09-30",env:"av_ubs",val:1271975},
+    {date:"2022-12-31",env:"av_ubs",val:1304598},
+    {date:"2023-02-28",env:"av_ubs",val:1266521},
+    {date:"2023-03-31",env:"av_ubs",val:1260581},
+    {date:"2023-05-31",env:"av_ubs",val:1172909},
+    {date:"2023-12-31",env:"av_ubs",val:1145811},
+    {date:"2024-02-01",env:"av_ubs",val:1175528},
+    {date:"2024-03-01",env:"av_ubs",val:1194553},
+    {date:"2024-03-31",env:"av_ubs",val:1210723},
+    {date:"2024-04-30",env:"av_ubs",val:1147599},
+    {date:"2024-05-31",env:"av_ubs",val:1155832},
+    {date:"2024-07-31",env:"av_ubs",val:1157952},
+    {date:"2024-08-31",env:"av_ubs",val:1162935},
+    {date:"2024-09-30",env:"av_ubs",val:1167472},
+    {date:"2024-11-30",env:"av_ubs",val:1177908},
+    {date:"2024-12-31",env:"av_ubs",val:1176128},
+    {date:"2025-02-28",env:"av_ubs",val:1200860},
+    {date:"2025-03-15",env:"av_ubs",val:1204515},
+    {date:"2025-03-31",env:"av_ubs",val:1192564},
+    {date:"2025-04-30",env:"av_ubs",val:1075659},
+    {date:"2025-05-31",env:"av_ubs",val:1091708},
+    {date:"2025-06-30",env:"av_ubs",val:1098618},
+    {date:"2025-07-31",env:"av_ubs",val:1109883},
+    {date:"2025-08-31",env:"av_ubs",val:1113396},
+    {date:"2025-09-30",env:"av_ubs",val:1120147},
+    {date:"2025-10-31",env:"av_ubs",val:1133397},
+    {date:"2025-11-30",env:"av_ubs",val:1130821},
+    {date:"2025-12-31",env:"av_ubs",val:1134654},
+    {date:"2026-01-31",env:"av_ubs",val:1148177},
+    {date:"2026-02-28",env:"av_ubs",val:1104871},
+    {date:"2026-03-31",env:"av_ubs",val:1064136},
+    {date:"2026-04-01",env:"av_ubs",val:1064067},
+    // Valeur estimée post-remboursement Alizé Oil&Gas 2025 (paiement 02/04/2026)
+    // Le produit était valorisé ~40 303€ dans le snapshot 01/04 → gain net +3 627€ (109%-100%)
+    // À confirmer sur le prochain relevé UBS
+    {date:"2026-04-05",env:"av_ubs",val:1067694},
+    // AV FANTOM — historique complet (IMG_0538, versement initial 400 000€, 0 rachat, arbitrages internes)
+    {date:"2021-09-30",env:"av_cnp_fantom",val:400000},
+    {date:"2021-10-31",env:"av_cnp_fantom",val:399825},
+    {date:"2022-02-01",env:"av_cnp_fantom",val:395876},
+    {date:"2022-04-30",env:"av_cnp_fantom",val:393700},
+    {date:"2022-07-31",env:"av_cnp_fantom",val:382251},
+    {date:"2022-12-31",env:"av_cnp_fantom",val:381453},
+    {date:"2023-06-30",env:"av_cnp_fantom",val:382251},
+    {date:"2023-07-31",env:"av_cnp_fantom",val:397137},
+    {date:"2023-08-31",env:"av_cnp_fantom",val:395681},
+    {date:"2023-09-30",env:"av_cnp_fantom",val:395982},
+    {date:"2023-11-30",env:"av_cnp_fantom",val:398964},
+    {date:"2024-01-01",env:"av_cnp_fantom",val:404279},
+    {date:"2024-02-01",env:"av_cnp_fantom",val:414036},
+    {date:"2024-03-01",env:"av_cnp_fantom",val:419036},
+    {date:"2024-04-01",env:"av_cnp_fantom",val:418622},
+    {date:"2024-05-01",env:"av_cnp_fantom",val:419022},
+    {date:"2024-08-01",env:"av_cnp_fantom",val:415103},
+    {date:"2024-09-01",env:"av_cnp_fantom",val:414671},
+    {date:"2024-10-01",env:"av_cnp_fantom",val:416080},
+    {date:"2024-11-01",env:"av_cnp_fantom",val:412824},
+    {date:"2024-12-01",env:"av_cnp_fantom",val:411528},
+    {date:"2024-12-31",env:"av_cnp_fantom",val:416704},
+    {date:"2025-01-15",env:"av_cnp_fantom",val:424462},
+    {date:"2025-02-15",env:"av_cnp_fantom",val:433491},
+    {date:"2025-02-28",env:"av_cnp_fantom",val:436956},
+    {date:"2025-03-31",env:"av_cnp_fantom",val:431317},
+    {date:"2025-04-30",env:"av_cnp_fantom",val:419022},
+    {date:"2025-05-30",env:"av_cnp_fantom",val:427293},
+    {date:"2025-06-30",env:"av_cnp_fantom",val:426471},
+    {date:"2025-07-30",env:"av_cnp_fantom",val:430730},
+    {date:"2025-08-31",env:"av_cnp_fantom",val:432964},
+    {date:"2025-09-30",env:"av_cnp_fantom",val:438172},
+    {date:"2025-10-30",env:"av_cnp_fantom",val:447505},
+    {date:"2025-11-30",env:"av_cnp_fantom",val:447251},
+    {date:"2025-12-31",env:"av_cnp_fantom",val:450566},
+    {date:"2026-01-31",env:"av_cnp_fantom",val:453588},
+    {date:"2026-02-28",env:"av_cnp_fantom",val:456636},
+    {date:"2026-03-31",env:"av_cnp_fantom",val:448506},
+    {date:"2026-04-01",env:"av_cnp_fantom",val:448393},
+    {date:"2025-04-01",env:"pea_fortuneo",val:23721},
+    {date:"2026-04-05",env:"pea_fortuneo",val:23755},
+    {date:"2025-04-01",env:"av_bnp",val:153152},
+    {date:"2025-04-01",env:"av_finary",val:3439},
+    {date:"2026-04-05",env:"av_finary",val:3430},
+    {date:"2023-06-30",env:"pe_global_strategies",val:109950}
+  ],
+
+  // MSCI World base 100 = déc 2021 — source justETF IE00B4L5Y983
+  // 2022: -12,96% | 2023: +19,55% | 2024: +26,24% | 2025: +7,12% | YTD avr26: +0,74%
+  msci_world:[
+    {date:"2021-12-31", val:100.00},
+    {date:"2022-03-31", val:96.67},
+    {date:"2022-06-30", val:93.38},
+    {date:"2022-09-30", val:90.16},
+    {date:"2022-12-31", val:87.04}, // -12,96%
+    {date:"2023-03-31", val:90.99},
+    {date:"2023-06-30", val:95.15},
+    {date:"2023-09-30", val:99.55},
+    {date:"2023-12-31", val:104.06}, // +19,55%
+    {date:"2024-03-31", val:110.26},
+    {date:"2024-06-30", val:116.90},
+    {date:"2024-09-30", val:124.00},
+    {date:"2024-12-31", val:131.37}, // +26,24%
+    {date:"2025-03-31", val:133.70},
+    {date:"2025-06-30", val:136.12},
+    {date:"2025-09-30", val:138.61},
+    {date:"2025-12-31", val:140.72}, // +7,12%
+    {date:"2026-04-05", val:141.76}  // YTD +0,74%
+  ],
+
+  positions:[
+    {env:"av_ubs",poche:"Libre UBS",support:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",cat:"structuré",val:100400,pru:100834},
+    // Alizé 5 Ans Oil & Gas 2025 (FR001400X870) — REMBOURSÉ le 02/04/2026 à 109% — position supprimée de D.positions
+    {env:"av_ubs",poche:"Libre UBS",support:"FCPR Eurazeo Strategic Opportunities 3 D",isin:"FR001400B3M1",cat:"pe",val:79774,pru:null},
+    {env:"av_ubs",poche:"Libre UBS",support:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",cat:"structuré",val:113992,pru:100000},
+    {env:"av_ubs",poche:"Libre UBS",support:"Fonds Général AEP",isin:null,cat:"fonds_euros",val:114004,pru:null},
+    {env:"av_ubs",poche:"Libre UBS",support:"BNP Paribas Mois ISR I Capitalisation",isin:"FR0007009808",cat:"monétaire",val:12950,pru:null},
+    {env:"av_ubs",poche:"Mandat UBS",support:"Mandat UBS (55 lignes — valorisation globale)",isin:null,cat:"mandat",val:582292,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A European Industrials 2026",isin:"FR0014015J79",cat:"structuré",val:100000,pru:100000},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Atlas 10 Ans CMS EUR 10Y 25",isin:"FR0014010A73",cat:"structuré",val:96186,pru:99960},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",cat:"structuré",val:53773,pru:50000},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"LMDG FloatFX 23 ACT R 3 Décimales",isin:"FR0013370988",cat:"structuré",val:63104,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"LM IG Fi 28 EUR Parts R",isin:"FR001400NQS0",cat:"structuré",val:60487,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A Oil & Gas 2025",isin:"FR0014012K87",cat:"structuré",val:35579,pru:34972},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A Santé 2025",isin:"FR0014012KC4",cat:"structuré",val:14383,pru:14988},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Ostrum ISR Cash Trésorerie C",isin:"FR0010622514",cat:"monétaire",val:14597,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"CNP Patrimoine Euros Lib RT 4G",isin:null,cat:"fonds_euros",val:18776,pru:null},
+    // PEA — données exactes Finary IMG_0547 (05/04/2026)
+    {env:"pea_fortuneo",poche:"PEA",support:"iShares MSCI World Swap PEA UCITS ETF",isin:"IE0002XZSH01",cat:"etf",val:11048,pru:10444,qty:1826,pru_unit:5.72,px:6.05},
+    {env:"pea_fortuneo",poche:"PEA",support:"BNP Paribas Easy S&P 500 UCITS ETF EUR C",isin:"FR0011550185",cat:"etf",val:10699,pru:10316,qty:372,pru_unit:27.73,px:28.76},
+    {env:"pea_fortuneo",poche:"PEA",support:"Indépendance Europe Small A(C)",isin:"LU1832174962",cat:"fonds",val:1139,pru:1123,qty:5,pru_unit:224.50,px:227.74},
+    {env:"pea_fortuneo",poche:"PEA",support:"Safran",isin:"FR0000073272",cat:"action",val:862,pru:870,qty:3,pru_unit:290.06,px:287.30},
+    {env:"pea_fortuneo",poche:"PEA",support:"Euro (liquidités)",isin:null,cat:"liquidités",val:7,pru:null,qty:7.32,pru_unit:null,px:1},
+    {env:"av_bnp",poche:"UC",support:"Athena Prestige Robotique & IA",isin:"FR001400T9P1",cat:"structuré",val:14013,pru:14000},
+    {env:"av_bnp",poche:"UC",support:"Athena Trimestriel Rheinmetall AG",isin:null,cat:"structuré",val:12546,pru:12500},
+    {env:"av_bnp",poche:"UC",support:"BNP Oasis Cybersécurité",isin:"FR001400G6K3",cat:"structuré",val:11995,pru:11600},
+    {env:"av_bnp",poche:"UC",support:"Amundi PEA Nasdaq-100",isin:"FR0011871110",cat:"etf",val:10618,pru:8500},
+    {env:"av_bnp",poche:"UC",support:"Amundi Stoxx Global AI",isin:"LU1861132840",cat:"etf",val:10566,pru:9000},
+    {env:"av_bnp",poche:"UC",support:"Autres UC BNP",isin:null,cat:"fonds",val:93414,pru:64000},
+    // Finary Life — IMG_0548 (05/04/2026)
+    {env:"av_finary",poche:"UC",support:"iShares Growth Portfolio UCITS ETF Euro Acc",isin:"IE00BLLZQ805",cat:"etf",val:3430,pru:3286,qty:463.39,pru_unit:7.09,px:7.40},
+    {env:"pe_global_strategies",poche:"Parts A",support:"Global Strategies 2021 SLP — Parts A",isin:"FR0014001X77",cat:"pe",val:109950,pru:129000}
+  ],
+
+  // STRUCTURÉS — données enrichies avec dates de constatation issues des KIDs
+  structures:[
+    // ── AV UBS EN COURS ──
+    {id:"st001",env:"av_ubs",nom:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",type:"taux",sous_jacent:"Taux CMS EUR 10 ans (EUAMDB10Index)",emetteur:"SG Issuer / Société Générale",
+      souscription:"2024-08-02",echeance:"2034-08-02",investi:100834,statut:"EN COURS",val:100400,pnl_latent:-434,pnl_realise:null,
+      capital_garanti_echeance:true,
+      // Constatations annuelles : coupon 7% si CMS ≤ 3,20% / autocall si CMS ≤ 2,50%
+      dates_constatation:["2025-08-02","2026-08-02","2027-08-02","2028-08-02","2029-08-02","2030-08-02","2031-08-02","2032-08-02","2033-08-02"],
+      dates_coupon:["2025-08-04","2026-08-04","2027-08-04","2028-08-04","2029-08-04","2030-08-04","2031-08-04","2032-08-04","2033-08-04"],
+      coupons:[{date:"2025-08-04",total:6962,note:"Coupon annuel versé — CMS 10Y ≤ 3,20%"}],
+      conditions:{coupon_taux:0.07,coupon_si_cms_inf:3.20,autocall_si_cms_inf:2.50},
+      barriere:null,taux_sortie:0.07,
+      note:"Capital garanti à l'échéance 02/08/2034. Perte possible avant échéance."},
+    {id:"st002",env:"av_ubs",nom:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",type:"autocall",sous_jacent:"STOXX Europe 600 Oil & Gas",emetteur:"UBS",
+      souscription:"2025-03-26",echeance:"2030-03-26",sortie:"2026-04-02",
+      investi:40303,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:3627,
+      taux_sortie:0.09,conditions:{barriere_capital:0.70,coupon_taux:0.09},
+      dates_constatation:[],coupons:[],
+      motif:"Remboursement anticipé à 109% — STOXX Oil&Gas à 144,09% le 26/03/2026",
+      note:"Source: Notification UBS 26/03/2026. Niveau initial 375,19 → clôture 540,63 (+44%). Remb. 109% payé le 02/04/2026. TRI: ~8,8%/an.",
+      capital_garanti_echeance:false},
+    {id:"st003",env:"av_ubs",nom:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",type:"taux",sous_jacent:"Obligations crédit euro IG/HY",emetteur:"La Maison de Gestion",
+      souscription:"2023-02-21",echeance:"2027-01-01",investi:100000,statut:"EN COURS",val:113992,pnl_latent:13992,pnl_realise:null,
+      capital_garanti_echeance:false,dates_constatation:[],coupons:[],conditions:{},taux_sortie:null,
+      note:"Obligation structurée taux flottant → fixe. Pas d'autocall."},
+    {id:"st004",env:"av_ubs",nom:"Climber 8 Ans Panier Luxe 2026",isin:"FR0014015K43",type:"autocall",sous_jacent:"LVMH / Richemont / Kering / Hermès (panier équipondéré)",emetteur:"CIC Market Solutions",
+      souscription:"2026-03-25",echeance:"2034-03-27",
+      investi:100000,statut:"EN COURS",val:100000,pnl_latent:0,
+      taux_sortie:0.0475,conditions:{barriere_capital:0.60,barriere_coupon:0.70,coupon_taux:0.0475},
+      dates_constatation:["2027-03-18","2028-03-20","2029-03-19","2030-03-18","2031-03-18","2032-03-18","2033-03-18","2034-03-20"],
+      coupons:[],
+      note:"Source: KID CIC FR0014015K43. Coupon 4,75%/an si panier ≥ 70%. Autocall annuel dès 25/03/2027 si panier ≥ 100% → gain +9,50% (coupon + prime). Barrière capital 60% à l'échéance. Constatation initiale: 18/03/2026.",
+      capital_garanti_echeance:false},
+    // ── AV UBS REMBOURSÉS ──
+    {id:"st005",env:"av_ubs",nom:"Alizé Strike Min 5 Ans Eurostoxx Banks II 2024",isin:"FR001400T6D3",type:"autocall",sous_jacent:"Eurostoxx Banks",emetteur:"UBS",
+      souscription:"2024-01-01",echeance:"2029-01-01",investi:112064,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:10090,
+      sortie:"2025-12-01",motif:"Autocall anticipé à pair (1 000€/UC)",coupons:[{date:"2025-12-01",total:10090,note:"Coupon autocall"}]},
+    {id:"st006",env:"av_ubs",nom:"Alizé 8 Ans ESG II 2021",isin:"XS2364114350",type:"autocall",sous_jacent:"Indice ESG",emetteur:"UBS",
+      souscription:"2021-09-13",echeance:"2029-01-01",investi:34036,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:7503,
+      sortie:"2025-01-23",motif:"Autocall anticipé +20,6%",coupons:[]},
+    {id:"st007",env:"av_ubs",nom:"Climber 5 Ans Oil & Gas 2024",isin:"FR1459AB0308",type:"autocall",sous_jacent:"STOXX® Europe 600 Oil & Gas",emetteur:"Goldman Sachs International",
+      souscription:"2024-03-22",echeance:"2029-03-29",investi:103663,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:3633,
+      sortie:"2025-03-31",motif:"Autocall anticipé +3,3% + coupon 53€/titre",
+      coupons:[{date:"2025-03-31",total:5496,note:"Source: KID Goldman Sachs FR1459AB0308. Coupon 53€/1000€ (~5,3%/an) si OilGas ≥ 70% niveau initial. Autocall annuel si ≥ 100%. Barrière capital 60% à l'échéance."}]},
+    // ── AV CNP FANTOM EN COURS ──
+    {id:"st010",env:"av_cnp_fantom",nom:"Alizé O2 5 Ans European Industrials 2026",isin:"FR0014015J79",type:"autocall",sous_jacent:"European Industrials",emetteur:"CNP/UBS",
+      souscription:"2026-02-16",echeance:"2031-02-16",investi:100000,statut:"EN COURS",val:100000,pnl_latent:0,pnl_realise:null,
+      capital_garanti_echeance:false,
+      dates_constatation:["2027-02-16","2028-02-16","2029-02-16","2030-02-16"],
+      coupons:[],conditions:{barriere_capital:0.70},taux_sortie:null,
+      note:"Autocall quotidien à partir du 22/10/2026 (entre 22/10/2026 et 21/10/2030)"},
+    {id:"st011",env:"av_cnp_fantom",nom:"Atlas 10 Ans CMS EUR 10Y 25",isin:"FR0014010A73",type:"taux",sous_jacent:"EUR CMS 10Y",emetteur:"CNP",
+      souscription:"2025-06-30",echeance:"2035-06-30",investi:99960,statut:"EN COURS",val:96186,pnl_latent:-3774,pnl_realise:null,
+      capital_garanti_echeance:false,
+      dates_constatation:["2026-06-30","2027-06-30","2028-06-30","2029-06-30","2030-06-30","2031-06-30","2032-06-30","2033-06-30","2034-06-30"],
+      coupons:[],conditions:{},taux_sortie:null},
+    {id:"st012",env:"av_cnp_fantom",nom:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",type:"autocall",sous_jacent:"Oil & Gas Sector",emetteur:"CNP/UBS",
+      souscription:"2025-03-06",echeance:"2030-03-06",investi:50000,statut:"EN COURS",val:53773,pnl_latent:3773,pnl_realise:null,
+      capital_garanti_echeance:false,
+      dates_constatation:["2026-03-06","2027-03-06","2028-03-06","2029-03-06"],
+      coupons:[],conditions:{barriere_capital:0.70},taux_sortie:null},
+    {id:"st013",env:"av_cnp_fantom",nom:"Alizé O2 5 Ans Oil & Gas 2025",isin:"FR0014012K87",type:"autocall",sous_jacent:"STOXX® 600 Oil & Gas (SXEP)",emetteur:"BNP Paribas Issuance BV",
+      souscription:"2025-10-29",echeance:"2030-10-29",investi:34972,statut:"EN COURS",val:35579,pnl_latent:607,pnl_realise:null,
+      capital_garanti_echeance:false,
+      // KID: autocall chaque jour de bourse entre 22/10/2026 et 21/10/2030
+      dates_constatation:["2026-10-22","2027-10-22","2028-10-22","2029-10-22"],
+      coupons:[],conditions:{barriere_capital:0.70,taux_sortie_pct:7.25},taux_sortie:0.0725,
+      note:"Autocall quotidien à partir du 22/10/2026. Taux sortie 7,25%/an pro rata."},
+    {id:"st014",env:"av_cnp_fantom",nom:"Alizé O2 5 Ans Santé 2025",isin:"FR0014012KC4",type:"autocall",sous_jacent:"Roche Holding / Sanofi / Novo Nordisk (panier équipondéré)",emetteur:"BNP Paribas Issuance BV",
+      souscription:"2025-10-29",echeance:"2030-10-29",
+      investi:14383,statut:"EN COURS",val:null,pnl_latent:null,
+      taux_sortie:0.075,conditions:{barriere_capital:0.70,coupon_taux:0.075},
+      dates_constatation:["2026-10-22","2027-10-22","2028-10-22","2029-10-22","2030-10-21"],
+      coupons:[],
+      note:"Source: KID BNP FR0014012KC4. Autocall QUOTIDIEN dès 22/10/2026 (chaque jour de bourse jusqu'au 21/10/2030) si panier ≥ 100% niveau initial. Coupon 7,50%/an pro rata temporis depuis le 22/10/2025. Barrière capital 70%. Constatation initiale: 22/10/2025.",
+      capital_garanti_echeance:false},
+    {id:"st015",env:"av_cnp_fantom",nom:"LMDG FloatFX 23 ACT R 3 Décimales",isin:"FR0013370988",type:"taux",sous_jacent:"Obligations crédit euro",emetteur:"La Maison de Gestion",
+      souscription:"2023-01-01",echeance:"2027-01-01",investi:null,statut:"EN COURS",val:63104,pnl_latent:null,pnl_realise:null,
+      dates_constatation:[],coupons:[],conditions:{}},
+    {id:"st009",env:"av_cnp_fantom",nom:"Climber 5 Ans Luxe 2023",isin:"FR001400LCW6",type:"autocall",sous_jacent:"LVMH / Kering / Richemont (panier équipondéré)",emetteur:"CIC",
+      souscription:"2023-12-08",echeance:"2028-12-08",sortie:"2025-12-15",
+      investi:100000,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:9200,
+      taux_sortie:0.046,conditions:{barriere_capital:0.60,coupon_taux:0.046},
+      dates_constatation:[],
+      coupons:[{date:"2024-12-15",total:4600},{date:"2025-12-15",total:4600}],
+      motif:"Autocall à la 2ème constatation annuelle (08/12/2025) — panier à 101,23%",
+      note:"Source: Notification CIC 08/12/2025. LVMH -15,41% / Kering -29,46% / Richemont +48,55% → panier 101,23%. Remb. 100% + coupon 9,20% payé le 15/12/2025. TRI: ~4,6%/an sur 2 ans.",
+      capital_garanti_echeance:false},
+    {id:"st016",env:"av_cnp_fantom",nom:"LM IG Fi 28 EUR Parts R",isin:"FR001400NQS0",type:"taux",sous_jacent:"Obligations IG Euro",emetteur:"La Maison de Gestion",
+      souscription:"2023-01-01",echeance:"2028-01-01",investi:null,statut:"EN COURS",val:60487,pnl_latent:null,pnl_realise:null,
+      dates_constatation:[],coupons:[],conditions:{}},
+    // ── AV BNP EN COURS ──
+    {id:"st020",env:"av_bnp",nom:"Athena Prestige Robotique & IA",isin:"FR001400T9P1",type:"autocall",sous_jacent:"ECPI Robotics & AI Index",emetteur:"BNP Paribas",
+      souscription:"2024-01-01",echeance:"2033-04-01",investi:14000,statut:"EN COURS",val:14013,pnl_latent:13,pnl_realise:null,
+      dates_constatation:["2025-04-01","2026-04-01","2027-04-01","2028-04-01","2029-04-01","2030-04-01"],
+      coupons:[],conditions:{}},
+    {id:"st021",env:"av_bnp",nom:"Athena Trimestriel Rheinmetall AG Juin 2030",isin:null,type:"autocall",sous_jacent:"Rheinmetall AG",emetteur:"BNP Paribas",
+      souscription:"2024-01-01",echeance:"2030-06-01",investi:12500,statut:"EN COURS",val:12546,pnl_latent:46,pnl_realise:null,
+      dates_constatation:["2025-06-01","2026-06-01","2027-06-01","2028-06-01","2029-06-01"],
+      coupons:[],conditions:{}},
+    {id:"st022",env:"av_bnp",nom:"BNP Oasis Cybersécurité",isin:"FR001400G6K3",type:"autocall",sous_jacent:"ECPI Global ESG Cybersecurity",emetteur:"BNP Paribas",
+      souscription:"2024-01-01",echeance:"2028-07-18",investi:11600,statut:"EN COURS",val:11995,pnl_latent:395,pnl_realise:null,
+      dates_constatation:["2025-07-18","2026-07-18","2027-07-18"],
+      coupons:[],conditions:{}}
+  ],
+
+  pe:{
+    engagement:150000,parts:1500,
+    appels:[
+      {n:0,date:"2021-03-24",montant:45000},{n:1,date:"2021-04-13",montant:15000},
+      {n:2,date:"2021-11-15",montant:7500},{n:3,date:"2022-04-14",montant:5250},
+      {n:4,date:"2022-07-21",montant:5250},{n:5,date:"2022-09-20",montant:3000},
+      {n:6,date:"2023-03-07",montant:10500},{n:7,date:"2023-06-20",montant:4500},
+      {n:8,date:"2023-09-20",montant:9750},{n:9,date:"2024-03-26",montant:4500},
+      {n:10,date:"2024-06-13",montant:4500},{n:11,date:"2025-11-01",montant:6750},
+      {n:12,date:null,montant:null},{n:13,date:null,montant:null}
+    ],
+    distributions:[{date:"2025-03-28",montant:18000}],
+    valorisations:[{date:"2023-06-30",actif_net:109950,appele_a_date:96000,pnl:13950}]
+  },
+
+  lombard:{
+    convention:"N°5033576",preteur:"UBS Europe SE",
+    initial:860000,date:"2023-08-07",
+    plafond_actuel:780000,
+    // Nantissement : AV UBS (182000187) + AV CNP FANTOM (A7A001415)
+    enveloppes_nanties:["av_ubs","av_cnp_fantom"],
+    // Utilisation des 860 000€ initiaux
+    utilisation:{
+      impots:552138,
+      pe_global_strategies:129000,
+      depenses_courantes:178862
+    },
+    remboursements:[
+      {date:"2023-02-28",montant:38154,note:"Remboursement LTV — AV UBS en baisse"},
+      {date:"2023-04-21",montant:84716,note:"Remboursement LTV — AV UBS en baisse"},
+      {date:"2023-09-27",montant:50000,note:"Remboursement LTV"},
+      {date:"2025-04-10",montant:100000,note:"Remboursement partiel"},
+      {date:"2026-02-17",montant:50000,note:"Remboursement"},
+      {date:"2026-03-17",montant:50000,note:"Remboursement"}
+    ],
+    retirages:[
+      {date:"2024-06-01",montant:159870,note:"Re-tirage estimé 2024 (impôts IFI/IR + besoins) — à confirmer avec CGP"}
+    ],
+    // Solde CGP février 2026 (avant remb. fév+mars) : 747 000€
+    // Après remb. fév+mars 2026 : 647 000€ estimé
+    // + rachats début 2026 non chiffrés à déduire
+    solde_cgp_fevrier2026:747000,
+    solde_estime_actuel:707813,
+    solde_note:"Solde exact au 04/04/2026 confirmé (photo interface UBS). LTV = 707 813 / (1 064 067 + 448 393) = 46,8%.",
+    solde_date_confirmation:"2026-04-04",
+    ltv_seuil:0.65,
+    ltv_alerte:0.55
+  },
+
+  frais:[
+    {annee:2021,adm:1198.75,mandat:538.83,ps:597.60,total:2874.01,src:"documenté"},
+    {annee:2022,adm:2425,mandat:3100,ps:null,total:5525,src:"reconstitué"},
+    {annee:2023,adm:2300,mandat:2950,ps:null,total:5250,src:"reconstitué"},
+    {annee:2024,adm:2450,mandat:2895,ps:null,total:5345,src:"reconstitué"}
+  ],
+
+  // ──────────────────────────────────────────────────────
+  // MANDAT UBS — snapshots trimestriels (source: AEP trimestriels)
+  // Frais: 0,50%/an AEP (enveloppe) + 0,50%/an mandat UBS = 1,00%/an total
+  // Les valorisations ci-dessous sont NETTES des frais de gestion mandat 0,50%
+  // mais BRUTES des 0,50% frais AEP (prélevés sur l'enveloppe globale)
+  // ──────────────────────────────────────────────────────
+  mandat:{
+    pru:500000, // Mise initiale mandat (13/09/2021)
+    frais_mandat_pct:0.005,  // 0,50%/an UBS
+    frais_aep_pct:0.005,     // 0,50%/an AEP Cardif
+    frais_total_pct:0.010,   // 1,00%/an total (approximation — frais AEP mutualisés enveloppe)
+
+    // Flux entrants/sortants du mandat (nécessaires pour TWRR correct)
+    flux:[
+      // Transfert documenté : AEP avenant — FG Bonus 150% → Mandat UBS
+      // Date exacte à confirmer — posé au 08/11/2022 (date avenant connu)
+      // Valeur mandat juste avant transfert inconnue → hypothèse calculée (484 821 × ratio)
+      {date:"2022-11-08", montant:50000, note:"Arbitrage FG Bonus 150% → Mandat (avenant AEP)", confirme:false}
+    ],
+
+    // Snapshots valorisation mandat (source: AEP trimestriels)
+    snapshots:[
+      {date:"2021-09-13", val:500000,  src:"AEP conditions particulières — mise initiale"},
+      {date:"2022-03-31", val:484821,  src:"AEP Q1 2022"},
+      // Valeur pré-transfert nov 2022 — interpolée linéairement entre mars 2022 et mars 2023
+      // (484821 + (524461-484821) × (mois_nov-mois_mars)/(mois_mars23-mois_mars22))
+      // = 484821 + 39640 × (8/12) = 484821 + 26427 = ~511248 (hors perf)
+      // Non inséré comme snapshot — le flux de 50k est traité séparément dans le TWRR
+      {date:"2023-03-31", val:524461,  src:"AEP Q1 2023"},
+      {date:"2023-09-30", val:526941,  src:"AEP Q3 2023"},
+      {date:"2024-03-31", val:563857,  src:"AEP Q1 2024"},
+      {date:"2025-03-31", val:575782,  src:"AEP Q1 2025"},
+      {date:"2025-06-30", val:582291,  src:"AEP Q2 2025"},
+      {date:"2026-04-05", val:582292,  src:"Relevé UBS 05/04/2026 (confirmé)"}
+    ],
+
+    // Note méthodologique TWRR
+    note_twrr:"TWRR calculé sur jalons trimestriels disponibles. Le transfert de 50 000€ (nov. 2022) est neutralisé comme flux entrant. Valeur pré-transfert estimée par interpolation — à confirmer avec l'AEP Q3 2022 si disponible.",
+    note_frais:"Frais de gestion mandat (0,50%/an) prélevés en continu par UBS — valorisations déjà nettes. Frais AEP (0,50%/an) prélevés sur l'enveloppe globale, non isolables sur le mandat seul."
+  },
+
+  // MSCI World NTR EUR (non hedgé) — base 100 = 13/09/2021
+  // MSCI World NTR EUR — base 100 = 13/09/2021
+  // Source : justETF IE00B4L5Y983 (iShares Core MSCI World Acc EUR)
+  // Performances annuelles EXACTES en EUR :
+  // 2021 : +31,16% (Morningstar) | 2022 : -12,96% | 2023 : +19,55% | 2024 : +26,24% | 2025 : +7,12%
+  // YTD avr 2026 : +0,74% (justETF)
+  // Méthode : v(t) = v(débutAnnée) × (1 + rAnnuel)^(fraction_année) — interpolation géométrique
+  // Jalons fin d'année ancrés : 108,43 | 94,38 | 112,83 | 142,44 | 152,58
+  // TWRR annualisé sept 2021 → avr 2026 : +9,89%/an (+53,7% cumulé)
+  msci_world_acc:[
+    {date:"2021-09-13", val:100.00}, // base mandat
+    {date:"2021-12-31", val:108.43}, // ← ancré 2021 (+31,16%, fraction 3,6 mois)
+    {date:"2022-03-31", val:104.81},
+    {date:"2022-06-30", val:101.24},
+    {date:"2022-09-30", val:97.75},
+    {date:"2022-12-31", val:94.38},  // ← ancré 2022 (-12,96%)
+    {date:"2023-03-31", val:98.59},
+    {date:"2023-06-30", val:103.09},
+    {date:"2023-09-30", val:107.85},
+    {date:"2023-12-31", val:112.83}, // ← ancré 2023 (+19,55%)
+    {date:"2024-03-31", val:119.50},
+    {date:"2024-06-30", val:126.65},
+    {date:"2024-09-30", val:134.31},
+    {date:"2024-12-31", val:142.44}, // ← ancré 2024 (+26,24%)
+    {date:"2025-03-31", val:144.85},
+    {date:"2025-06-30", val:147.36},
+    {date:"2025-09-30", val:149.95},
+    {date:"2025-12-31", val:152.58}, // ← ancré 2025 (+7,12%)
+    {date:"2026-04-05", val:153.71}  // YTD +0,74% au 05/04/2026 (justETF)
+  ]
+};
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const eur=(n,d=0)=>n==null?'—':new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const pct=(n,d=1)=>n==null?'—':(n*100).toFixed(d).replace('.',',')+'%';
+const fd=s=>s?new Date(s).toLocaleDateString('fr-FR'):'—';
+const fdm=s=>s?new Date(s).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'—';
+const fdmlong=s=>s?new Date(s).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+
+function lastSnap(id){return D.snapshots.filter(s=>s.env===id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0]}
+function valEnv(id){const s=lastSnap(id);return s?s.val:0}
+function soldeLombard(){
+  // Utilise le solde estimé actuel (corrigé des re-tirages + remboursements)
+  // plutôt que le calcul simple initial - remboursements (qui ignore les re-tirages)
+  return D.lombard.solde_estime_actuel;
+}
+function soldeLombardCalcule(){
+  // Pour info : calcul mécanique sans les re-tirages (sous-estime le vrai solde)
+  return D.lombard.initial - D.lombard.remboursements.reduce((a,r)=>a+r.montant,0);
+}
+function ltv(){
+  // LTV calculée sur le collatéral total (AV UBS + AV FANTOM)
+  const collatéral=D.lombard.enveloppes_nanties.reduce((a,id)=>a+valEnv(id),0);
+  return collatéral>0?soldeLombard()/collatéral:0;
+}
+function ltvCollatéral(){
+  return D.lombard.enveloppes_nanties.reduce((a,id)=>a+valEnv(id),0);
+}
+function ptotal(){return D.enveloppes.reduce((a,e)=>a+valEnv(e.id),0)}
+function pnet(){return ptotal()-soldeLombard()}
+function envName(id){return(D.enveloppes.find(e=>e.id===id)||{}).court||id}
+function envColor(id){return(D.enveloppes.find(e=>e.id===id)||{}).couleur||'#fff'}
+
+function pnlStr(n,showPct=false,base=null){
+  if(n==null) return '<span class="muted">—</span>';
+  const cl=n>0?'pos':n<0?'neg':'muted';
+  const sign=n>0?'+':'';
+  let s=`<span class="${cl}">${sign}${eur(n)}</span>`;
+  if(showPct&&base&&base>0) s+=` <span class="${cl}" style="font-size:.75em">(${sign}${(n/base*100).toFixed(1).replace('.',',')}%)</span>`;
+  return s;
+}
+
+// TRI par méthode de Newton-Raphson
+function calcTRI(flux){
+  // flux = [{date, montant}] montant négatif = sortie cash, positif = entrée
+  function npv(r){
+    const t0=new Date(flux[0].date).getTime();
+    return flux.reduce((s,f)=>{
+      const t=(new Date(f.date).getTime()-t0)/(365.25*24*3600*1000);
+      return s+f.montant/Math.pow(1+r,t);
+    },0);
+  }
+  let r=0.1;
+  for(let i=0;i<100;i++){
+    const f=npv(r),df=(npv(r+1e-6)-f)/1e-6;
+    if(Math.abs(df)<1e-12) break;
+    const nr=r-f/df;
+    if(Math.abs(nr-r)<1e-8){r=nr;break}
+    r=nr;
+  }
+  return isFinite(r)?r:null;
+}
+
+function calcPEFlux(){
+  const pe=D.pe;
+  const appeles=pe.appels.filter(a=>a.date&&a.montant);
+  const flux=appeles.map(a=>({date:a.date,montant:-a.montant}));
+  // Distributions
+  pe.distributions.forEach(d=>flux.push({date:d.date,montant:d.montant}));
+  // Valeur résiduelle = dernière valorisation connue
+  const lastVal=pe.valorisations[pe.valorisations.length-1];
+  flux.push({date:lastVal.date,montant:lastVal.actif_net});
+  flux.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  return flux;
+}
+
+// ═══════════════════════════════════════════════════════
+// ROUTER
+// ═══════════════════════════════════════════════════════
+let _charts={};
+function destroyChart(id){if(_charts[id]){_charts[id].destroy();delete _charts[id]}}
+
+function nav(page,envId=null){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  const pEl=document.getElementById('page-'+page);
+  if(pEl) pEl.classList.add('active');
+  const sbEl=document.querySelector(`.sb-item[data-page="${page}"]`);
+  if(sbEl) sbEl.classList.add('active');
+  const titles={dashboard:'Dashboard',timeline:'Calendrier',enveloppes:'Enveloppes','env-detail':'Enveloppe',structures:'Structurés',lombard:'Crédit Lombard',pe:'Private Equity',frais:'Frais',rendement:'Rendement',strategie:'Stratégie'};
+  document.getElementById('topbar-title').textContent=titles[page]||page;
+  if(page==='enveloppes') renderEnveloppes();
+  if(page==='structures') renderStructures();
+  if(page==='lombard') renderLombard();
+  if(page==='pe') renderPE();
+  if(page==='frais') renderFrais();
+  if(page==='timeline') renderTimeline();
+  if(page==='strategie') renderStrategie();
+  if(page==='rendement'){renderRendement();setTimeout(()=>{initPerfChart(_perfScope);initMandatChart();},80);}
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDashboard(){
+  const pt=ptotal(),pn=pnet(),solde=soldeLombard(),ltvV=ltv();
+  const stEc=D.structures.filter(s=>s.statut==='EN COURS');
+  const stVal=stEc.reduce((a,s)=>a+(s.val||0),0);
+
+  // P&L global — corrigé des rachats (sorties d'épargne liées au Lombard)
+  // Formule : Perf réelle = (Valeur actuelle + Rachats effectués) - Valeur initiale
+  const PRUtotal=D.enveloppes.reduce((a,e)=>a+(e.pru||0),0);
+  const totalRachats=D.enveloppes.reduce((a,e)=>a+(e.rachats_documentes||0),0);
+  const pnlReel=pt+totalRachats-PRUtotal;
+  const pnlBrut=pt-PRUtotal;
+
+  document.getElementById('kpi-strip').innerHTML=`
+    <div class="kpi" style="--kpi-color:var(--blue)">
+      <div class="kpi-label">Patrimoine brut</div>
+      <div class="kpi-value">${eur(pt)}</div>
+      <div class="kpi-sub" style="flex-direction:column;align-items:flex-start;gap:2px">
+        <span>${pnlStr(pnlReel,true,PRUtotal)} perf. actifs</span>
+        <span style="font-size:.65rem;color:var(--txt3)">hors rachats ${eur(totalRachats)} · hors Lombard</span>
+      </div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--green)">
+      <div class="kpi-label">Patrimoine net</div>
+      <div class="kpi-value">${eur(pn)}</div>
+      <div class="kpi-sub">après Lombard ${eur(solde)}</div>
+    </div>
+    <div class="kpi" style="--kpi-color:${ltvV>=0.65?'var(--red)':'var(--orange)'}">
+      <div class="kpi-label">LTV Lombard</div>
+      <div class="kpi-value">${pct(ltvV)}</div>
+      <div class="kpi-sub"><span class="${ltvV>=0.65?'bn':'bg-ok'}">${ltvV>=0.65?'⚠ Alerte':'✓ OK'}</span> seuil 65%</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--purple)">
+      <div class="kpi-label">Structurés actifs</div>
+      <div class="kpi-value">${stEc.length}</div>
+      <div class="kpi-sub">${eur(stVal)} investis</div>
+    </div>
+  `;
+
+  document.getElementById('topbar-ltv').textContent=`LTV ${pct(ltvV)}`;
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+
+  // Multi-chart selector
+  renderMultiChart(['av_ubs']);
+
+  // Donut
+  const envVals=D.enveloppes.map(e=>valEnv(e.id));
+  destroyChart('donut');
+  const ctx2=document.getElementById('chart-donut').getContext('2d');
+  _charts['donut']=new Chart(ctx2,{type:'doughnut',data:{labels:D.enveloppes.map(e=>e.court),datasets:[{data:envVals,backgroundColor:D.enveloppes.map(e=>e.couleur),borderColor:'#0A0C10',borderWidth:2,hoverOffset:4}]},options:{responsive:true,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#1A1E2A',titleColor:'#8891A8',bodyColor:'#E8ECF4',borderColor:'rgba(255,255,255,.1)',borderWidth:1,callbacks:{label:c=>`${c.label}: ${eur(c.raw)} (${pct(c.raw/pt)})`}}}}});
+  document.getElementById('donut-legend').innerHTML=D.enveloppes.map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:.75rem;cursor:pointer" onclick="nav('env-detail');renderEnvDetail('${e.id}')">
+      <span style="width:7px;height:7px;border-radius:50%;background:${e.couleur};flex-shrink:0"></span>
+      <span style="color:var(--txt2);flex:1">${e.court}</span>
+      <span style="font-family:DM Mono,monospace;color:var(--txt3);font-size:.7rem">${pct(envVals[i]/pt)}</span>
+    </div>`).join('');
+
+  // Env cards
+  document.getElementById('dash-env-cards').innerHTML=D.enveloppes.map(e=>envCardHTML(e)).join('');
+
+  // Structurés preview
+  document.getElementById('dash-structs').innerHTML=stEc.slice(0,4).map(s=>`
+    <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="nav('structures')">
+      <div><div style="font-size:.81rem;font-weight:600">${s.nom.length>38?s.nom.slice(0,36)+'…':s.nom}</div>
+      <div style="font-size:.7rem;color:var(--txt3);margin-top:2px">${s.emetteur} · ${envName(s.env)}</div></div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:Syne,sans-serif;font-weight:600;font-size:.88rem">${eur(s.val)}</div>
+        <div style="font-size:.71rem">${pnlStr(s.pnl_latent)}</div>
+      </div>
+    </div>`).join('');
+
+  // Lombard
+  const lv=ltv(),collDash=ltvCollatéral();
+  document.getElementById('dash-lombard').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Solde estimé</div><div style="font-family:Syne,sans-serif;font-size:1.05rem;font-weight:700;color:var(--red)">${eur(solde)}</div></div>
+      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">LTV collatéral</div><div style="font-family:Syne,sans-serif;font-size:1.05rem;font-weight:700;color:${lv>=0.65?'var(--red)':lv>=0.55?'var(--orange)':'var(--green)'}">${pct(lv)}</div></div>
+    </div>
+    <div class="ltv-bg" style="height:5px"><div class="ltv-fill" style="width:${Math.min(lv*100,100).toFixed(1)}%"></div><div class="ltv-seuil" style="left:65%"></div></div>
+    <div class="ltv-zones"><span>0%</span><span>65%</span><span>100%</span></div>
+    <div style="font-size:.71rem;color:var(--txt3);margin-top:7px">AV UBS + FANTOM · ${eur(collDash)} collatéral · Buffer ${eur(collDash*0.65-solde)}</div>`;
+
+  // PE
+  const pe=D.pe,appele=pe.appels.filter(a=>a.date&&a.montant).reduce((a,x)=>a+x.montant,0);
+  document.getElementById('dash-pe').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Engagement</div><div style="font-family:Syne,sans-serif;font-weight:700">${eur(pe.engagement)}</div></div>
+      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Appelé</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--blue)">${eur(appele)}</div></div>
+      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Actif net</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--green)">${eur(pe.valorisations[0].actif_net)}</div></div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${(appele/pe.engagement*100).toFixed(1)}%;background:var(--orange)"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:.69rem;color:var(--txt3);font-family:DM Mono,monospace;margin-top:3px"><span>${pct(appele/pe.engagement)} appelé</span><span>Reste ${eur(pe.engagement-appele)}</span></div>`;
+
+  // Frais
+  const maxF=Math.max(...D.frais.map(f=>f.total));
+  document.getElementById('dash-frais').innerHTML=D.frais.map(f=>`
+    <div class="frais-row">
+      <div style="font-family:Syne,sans-serif;font-weight:600;min-width:42px">${f.annee}</div>
+      <div style="flex:1"><div class="prog-bar" style="margin:0"><div class="prog-fill" style="width:${(f.total/maxF*100).toFixed(1)}%;background:var(--orange)"></div></div></div>
+      <div style="font-family:DM Mono,monospace;font-size:.78rem;min-width:70px;text-align:right">${eur(f.total)}</div>
+      <div style="font-size:.63rem;color:${f.src==='documenté'?'var(--green)':'var(--txt3)'};min-width:80px;text-align:right">~${f.src}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// MULTI-CHART
+// ═══════════════════════════════════════════════════════
+let selectedEnvs=['av_ubs'];
+
+function renderMultiChart(sel){
+  selectedEnvs=sel;
+  const allDates=[...new Set([
+    ...D.snapshots.map(s=>s.date),
+    ...D.msci_world.map(s=>s.date)
+  ])].sort();
+
+  // Selector buttons
+  const sel_html=`
+    <div class="chart-sel">
+      ${D.enveloppes.map(e=>`
+        <button class="chart-sel-btn ${selectedEnvs.includes(e.id)?'active':''}" onclick="toggleEnv('${e.id}')" style="${selectedEnvs.includes(e.id)?`border-color:${e.couleur};color:${e.couleur}`:''}">
+          <span class="dot" style="background:${e.couleur}"></span>${e.court}
+        </button>`).join('')}
+      <button class="chart-sel-btn ${selectedEnvs.includes('msci')?'active':''}" onclick="toggleEnv('msci')" style="${selectedEnvs.includes('msci')?'border-color:#F472B6;color:#F472B6':''}">
+        <span class="dot" style="background:#F472B6"></span>MSCI W
+      </button>
+    </div>`;
+  document.getElementById('chart-env-sel').innerHTML=sel_html.replace('<div class="chart-sel">','').replace('</div>','');
+  document.getElementById('chart-env-sel').innerHTML=D.enveloppes.map(e=>`
+    <button class="chart-sel-btn ${selectedEnvs.includes(e.id)?'active':''}" onclick="toggleEnv('${e.id}')" style="${selectedEnvs.includes(e.id)?`border-color:${e.couleur};color:${e.couleur}`:''}">
+      <span class="dot" style="background:${e.couleur}"></span>${e.court}
+    </button>`).join('')+`
+    <button class="chart-sel-btn ${selectedEnvs.includes('msci')?'active':''}" onclick="toggleEnv('msci')" style="${selectedEnvs.includes('msci')?'border-color:#F472B6;color:#F472B6':''}">
+      <span class="dot" style="background:#F472B6"></span>MSCI W
+    </button>`;
+
+  // Collect unique dates for selected envs
+  let labels=[];
+  const datasets=[];
+
+  selectedEnvs.forEach(envId=>{
+    if(envId==='msci'){
+      const snaps=D.msci_world.sort((a,b)=>new Date(a.date)-new Date(b.date));
+      snaps.forEach(s=>{if(!labels.includes(s.date))labels.push(s.date)});
+    } else {
+      const snaps=D.snapshots.filter(s=>s.env===envId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      snaps.forEach(s=>{if(!labels.includes(s.date))labels.push(s.date)});
+    }
+  });
+  labels.sort();
+
+  selectedEnvs.forEach(envId=>{
+    if(envId==='msci'){
+      const snaps=D.msci_world.sort((a,b)=>new Date(a.date)-new Date(b.date));
+      // Normalize to base 100 at first point, then scale to be visually comparable
+      const data=labels.map(d=>{
+        const s=snaps.find(x=>x.date===d);
+        return s?s.val:null;
+      });
+      datasets.push({label:'MSCI World (base 100)',data,borderColor:'#F472B6',borderWidth:1.5,backgroundColor:'rgba(244,114,182,0.05)',fill:false,pointRadius:2,tension:0.4,borderDash:[4,3],yAxisID:'y2'});
+    } else {
+      const env=D.enveloppes.find(e=>e.id===envId);
+      const snaps=D.snapshots.filter(s=>s.env===envId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const data=labels.map(d=>{
+        const s=snaps.find(x=>x.date===d);
+        return s?s.val:null;
+      });
+      datasets.push({label:env.court,data,borderColor:env.couleur,borderWidth:2,backgroundColor:env.couleur+'12',fill:selectedEnvs.length===1,pointBackgroundColor:env.couleur,pointRadius:3,tension:0.4,spanGaps:true,yAxisID:'y'});
+    }
+  });
+
+  destroyChart('multi');
+  const ctx=document.getElementById('chart-multi').getContext('2d');
+  _charts['multi']=new Chart(ctx,{
+    type:'line',
+    data:{labels:labels.map(d=>fdm(d)),datasets},
+    options:{
+      responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:datasets.length>1,labels:{color:'#8891A8',font:{size:10},boxWidth:12}},tooltip:{backgroundColor:'#1A1E2A',titleColor:'#8891A8',bodyColor:'#E8ECF4',borderColor:'rgba(255,255,255,.1)',borderWidth:1,callbacks:{label:c=>c.dataset.yAxisID==='y2'?`${c.dataset.label}: ${c.raw?.toFixed(1)}`:c.dataset.label+': '+eur(c.raw)}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:10},callback:v=>eur(v)},position:'left'},
+        y2:{display:selectedEnvs.includes('msci'),grid:{display:false},ticks:{color:'#F472B6',font:{size:9}},position:'right'}
+      }
+    }
+  });
+}
+
+function toggleEnv(id){
+  if(selectedEnvs.includes(id)) selectedEnvs=selectedEnvs.filter(e=>e!==id);
+  else selectedEnvs.push(id);
+  if(selectedEnvs.length===0) selectedEnvs=['av_ubs'];
+  renderMultiChart(selectedEnvs);
+}
+
+// ═══════════════════════════════════════════════════════
+// ENV CARD
+// ═══════════════════════════════════════════════════════
+function typeLabel(t){return{assurance_vie:'Assurance vie',pea:'PEA',pe_fonds:'PE Illiquide'}[t]||t}
+
+function envCardHTML(e){
+  const val=valEnv(e.id),snap=lastSnap(e.id),pt=ptotal(),pru=e.pru||0;
+  const rachatsEnv=e.rachats_documentes||0;
+  const pnl=pru>0?val+rachatsEnv-pru:null;
+  // Pas de template literal imbriqué — string concat simple
+  let pnlHtml='';
+  if(pnl!==null){
+    pnlHtml='<div style="font-size:.74rem;margin-bottom:3px">'+pnlStr(pnl,true,pru);
+    if(rachatsEnv>0) pnlHtml+=' <span style="font-size:.65rem;color:var(--txt3)">hors rachats</span>';
+    pnlHtml+='</div>';
+  }
+  let tags='';
+  if(e.nanti) tags+='<span class="tag tag-nanti">Nanti</span>';
+  if(e.demembre) tags+='<span class="tag tag-demem">Démembré</span>';
+  if(e.type==='pe_fonds') tags+='<span class="tag tag-pe">Illiquide</span>';
+  // Use data-env-id + event delegation to avoid all quote nesting issues
+  return '<div class="env-card" data-env-id="'+e.id+'">'
+    +'<div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:'+e.couleur+';border-radius:var(--r) 0 0 var(--r)"></div>'
+    +'<div class="env-card-header"><span style="font-size:.9rem">'+e.icone+'</span>'
+    +'<div><div class="env-card-name">'+e.court+'</div><div class="env-card-type">'+typeLabel(e.type)+'</div></div></div>'
+    +'<div class="env-card-value" style="color:'+e.couleur+'">'+eur(val)+'</div>'
+    +pnlHtml
+    +'<div class="env-card-meta"><span>'+(snap?fd(snap.date):'—')+'</span>'+tags+'</div>'
+    +'<div class="env-card-prog"><div class="env-card-prog-fill" style="width:'+(val/pt*100).toFixed(1)+'%;background:'+e.couleur+';opacity:.6"></div></div>'
+    +'</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// ENV DETAIL
+// ═══════════════════════════════════════════════════════
+function renderEnvDetail(envId){
+  const e=D.enveloppes.find(x=>x.id===envId);
+  if(!e){console.error('Enveloppe non trouvée:',envId);return;}
+  const val=valEnv(envId),snap=lastSnap(envId);
+  const snaps=D.snapshots.filter(s=>s.env===envId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const pos=D.positions.filter(p=>p.env===envId && p.cat!=='structuré');
+  const structs=D.structures.filter(s=>s.env===envId);
+  const pru=e.pru||0;
+  const rachats=e.rachats_documentes||0;
+  const pnl=pru>0?val+rachats-pru:null;
+
+  // Header tags
+  var tags='';
+  if(e.nanti) tags+='<span class="tag tag-nanti">Nanti · Lombard '+D.lombard.convention+'</span>';
+  if(e.demembre&&e.demembre_detail) tags+='<span class="tag tag-demem">NP: '+e.demembre_detail.np+' · US: '+e.demembre_detail.us+'</span>';
+
+  // Meta info
+  var metaItems='';
+  if(e.assureur) metaItems+='<span>'+e.assureur+'</span>';
+  if(e.courtier) metaItems+='<span>'+e.courtier+'</span>';
+  if(e.numero) metaItems+='<span class="isin">N° '+e.numero+'</span>';
+  if(e.isin) metaItems+='<span class="isin">'+e.isin+'</span>';
+
+  // P&L line
+  var pnlLine='';
+  if(pnl!==null){
+    pnlLine='<div style="font-size:.82rem;margin-top:4px">'+pnlStr(pnl,true,pru)+' vs PRU '+eur(pru);
+    if(rachats>0) pnlLine+=' <span style="font-size:.72rem;color:var(--txt3)">(hors rachats '+eur(rachats)+')</span>';
+    pnlLine+='</div>';
+  }
+
+  var html=''
+    +'<div style="padding:20px 26px 14px;background:var(--bg1);border-bottom:1px solid var(--border)">'
+    +'<button class="back-btn" id="back-to-envs">← Toutes les enveloppes</button>'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap">'
+    +'<div>'
+    +'<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">'
+    +'<span style="font-size:1.2rem">'+e.icone+'</span>'
+    +'<div style="font-family:Syne,sans-serif;font-size:1.3rem;font-weight:700;color:'+e.couleur+'">'+e.nom+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px">'+tags+'</div>'
+    +'<div style="font-size:.75rem;color:var(--txt3);display:flex;gap:12px;flex-wrap:wrap">'+metaItems+'</div>'
+    +'</div>'
+    +'<div style="text-align:right">'
+    +'<div style="font-family:Syne,sans-serif;font-size:1.7rem;font-weight:700;color:'+e.couleur+'">'+eur(val)+'</div>'
+    +'<div style="font-size:.74rem;color:var(--txt3);margin-top:2px">'+(snap?fd(snap.date):'')+'</div>'
+    +pnlLine
+    +'</div></div></div>';
+
+  // Special PE
+  if(envId==='pe_global_strategies'){
+    html+=renderPEEnvSection();
+    document.getElementById('env-detail-content').innerHTML=html;
+    return;
+  }
+
+  // Historique chart
+  if(snaps.length>1){
+    html+='<div style="padding:18px 26px 0">'
+      +'<div class="sec-title" style="margin-bottom:10px">Historique valorisation</div>'
+      +'<div class="card" style="padding:14px"><canvas id="env-chart-'+envId+'" style="max-height:150px"></canvas></div>'
+      +'</div>';
+  }
+
+  // Positions table (structurés exclus)
+  if(pos.length){
+    var hasKnownPRU=pos.some(function(p){return p.pru!=null;});
+    var rows='';
+    pos.forEach(function(p){
+      var pl=p.pru!=null?p.val-p.pru:null;
+      var isinCell=p.isin?'<span class="isin">'+p.isin+'</span>':'<span class="muted">—</span>';
+      var pruCell=p.pru?eur(p.pru):'<span class="muted">—</span>';
+      var plCell=pl!=null?pnlStr(pl,true,p.pru):'<span class="muted" style="font-size:.72rem">PRU manquant</span>';
+      var partCell=val>0?pct(p.val/val):'—';
+      rows+='<tr>'
+        +'<td class="bold">'+p.support+'</td>'
+        +'<td><span class="status s-ec" style="font-size:.63rem">'+p.cat+'</span></td>'
+        +'<td>'+isinCell+'</td>'
+        +'<td class="num bold">'+eur(p.val)+'</td>'
+        +(hasKnownPRU?'<td class="num muted">'+pruCell+'</td><td class="num">'+plCell+'</td>':'')
+        +'<td class="num muted">'+partCell+'</td>'
+        +'</tr>';
+    });
+    var extraCols=hasKnownPRU?'<th class="num">PRU</th><th class="num">P&amp;L</th>':'';
+    html+='<div style="padding:18px 26px 0">'
+      +'<div class="sec-title" style="margin-bottom:10px">Positions <span class="sec-sub">'+(snap?fd(snap.date):'')+'</span></div>'
+      +'<div class="card" style="padding:0;overflow:hidden">'
+      +'<table class="tbl"><thead><tr>'
+      +'<th>Support</th><th>Cat.</th><th>ISIN</th><th class="num">Valeur</th>'
+      +extraCols
+      +'<th class="num">Part</th>'
+      +'</tr></thead><tbody>'+rows+'</tbody></table>'
+      +'</div></div>';
+  }
+
+  // Structurés section — EN COURS d'abord, REMBOURSÉS ensuite
+  if(structs.length){
+    var structs_ec = structs.filter(function(s){return s.statut==='EN COURS';});
+    var structs_re = structs.filter(function(s){return s.statut==='REMBOURSÉ';});
+    html+='<div style="padding:18px 26px 26px">';
+    if(structs_ec.length){
+      html+='<div class="sec-title" style="margin-bottom:10px">Produits structurés en cours'
+        +' <span class="sec-sub">('+structs_ec.length+')</span></div>'
+        +structs_ec.map(function(s){return scHTML(s);}).join('');
+    }
+    if(structs_re.length){
+      html+='<div class="sec-title" style="margin-top:18px;margin-bottom:10px">Remboursés'
+        +' <span class="sec-sub">('+structs_re.length+')</span></div>'
+        +structs_re.map(function(s){return scHTML(s);}).join('');
+    }
+    html+='</div>';
+  }
+
+  document.getElementById('env-detail-content').innerHTML=html;
+
+  // Render chart after DOM
+  if(snaps.length>1) setTimeout(function(){
+    var ctx=document.getElementById('env-chart-'+envId);
+    if(ctx){
+      destroyChart('env-'+envId);
+      _charts['env-'+envId]=new Chart(ctx.getContext('2d'),{
+        type:'line',
+        data:{
+          labels:snaps.map(function(s){return fdm(s.date);}),
+          datasets:[{data:snaps.map(function(s){return s.val;}),borderColor:e.couleur,borderWidth:2,
+            backgroundColor:e.couleur+'12',fill:true,pointBackgroundColor:e.couleur,pointRadius:3,tension:0.4}]
+        },
+        options:{responsive:true,maintainAspectRatio:true,
+          plugins:{legend:{display:false},tooltip:{backgroundColor:'#1A1E2A',titleColor:'#8891A8',bodyColor:'#E8ECF4',borderColor:'rgba(255,255,255,.1)',borderWidth:1,callbacks:{label:function(c){return eur(c.raw);}}}},
+          scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9}}},
+            y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9},callback:function(v){return eur(v);}}}}}
+      });
+    }
+  },50);
+}
+
+// PE enrichi dans section enveloppe
+function renderPEEnvSection(){
+  const pe=D.pe;
+  const appeles=pe.appels.filter(a=>a.date&&a.montant);
+  const appele=appeles.reduce((a,x)=>a+x.montant,0);
+  const reste=pe.engagement-appele;
+  const lastVal=pe.valorisations[0];
+  const distrib=pe.distributions.reduce((a,d)=>a+d.montant,0);
+  const moic=lastVal.actif_net/appele;
+  const flux=calcPEFlux();
+  const tri=calcTRI(flux);
+
+  return `<div style="padding:18px 26px 26px">
+    <!-- TRI / MOIC -->
+    <div class="sec-title" style="margin-bottom:12px">Métriques de performance</div>
+    <div class="tri-box">
+      <div class="tri-item"><label>TRI estimé</label><div class="val" style="color:${tri>0.08?'var(--green)':tri>0?'var(--orange)':'var(--red)'}">${tri?pct(tri,1):'—'}</div><small style="font-size:.65rem;color:var(--txt3)">sur flux datés + val. 06/2023</small></div>
+      <div class="tri-item"><label>MOIC</label><div class="val" style="color:${moic>1?'var(--green)':'var(--red)'}">${moic.toFixed(2)}×</div><small style="font-size:.65rem;color:var(--txt3)">actif net / appelé total</small></div>
+      <div class="tri-item"><label>P&L vs appelé (${fd(lastVal.date)})</label><div class="val" style="color:var(--green)">+${eur(lastVal.pnl)}</div><small style="font-size:.65rem;color:var(--txt3)">${eur(lastVal.actif_net)} sur ${eur(lastVal.appele_a_date)} appelés</small></div>
+    </div>
+    <div style="padding:8px 12px;background:rgba(245,147,64,.07);border:1px solid rgba(245,147,64,.2);border-radius:6px;font-size:.73rem;color:var(--txt3);margin-bottom:16px">
+      ⚠ TRI et MOIC calculés avec valorisation attestée au 30/06/2023. Valorisation post-2023 inconnue — les métriques réelles peuvent différer.
+    </div>
+
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="card-title">Situation globale</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div><div class="kpi-label" style="font-size:.65rem;margin-bottom:3px">Engagement</div><div style="font-family:Syne,sans-serif;font-weight:700">${eur(pe.engagement)}</div></div>
+          <div><div class="kpi-label" style="font-size:.65rem;margin-bottom:3px">Parts souscrites</div><div style="font-family:Syne,sans-serif;font-weight:700">${pe.parts.toLocaleString('fr-FR')}</div></div>
+          <div><div class="kpi-label" style="font-size:.65rem;margin-bottom:3px">Montant appelé</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--blue)">${eur(appele)}</div></div>
+          <div><div class="kpi-label" style="font-size:.65rem;margin-bottom:3px">Reste à appeler</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--orange)">${eur(reste)}</div></div>
+          <div><div class="kpi-label" style="font-size:.65rem;margin-bottom:3px">Actif net (30/06/23)</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--green)">${eur(lastVal.actif_net)}</div></div>
+          <div><div class="kpi-label" style="font-size:.65rem;margin-bottom:3px">Distribution reçue</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--gold)">${eur(distrib)}</div></div>
+        </div>
+        <div style="font-size:.73rem;color:var(--txt3);margin-bottom:5px">Progression appels — ${pct(appele/pe.engagement,0)} (${appeles.length}/14)</div>
+        <div class="prog-bar" style="height:7px"><div class="prog-fill" style="width:${(appele/pe.engagement*100).toFixed(1)}%;background:var(--orange)"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--txt3);font-family:DM Mono,monospace;margin-top:3px">
+          <span>${eur(appele)} appelé</span><span>${eur(reste)} restant</span>
+        </div>
+        <div style="margin-top:12px;padding:9px 11px;background:rgba(46,204,138,.07);border:1px solid rgba(46,204,138,.15);border-radius:6px;font-size:.75rem;color:var(--txt2)">
+          Équitis Gestion (AMF GP-02-023) · Dépositaire : Société Générale<br>
+          ISIN : FR0014001X77 · Souscription : ${fd(D.enveloppes.find(e=>e.id==='pe_global_strategies').souscription)}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Appels de fonds</div>
+        <div class="pe-grid">
+          ${pe.appels.map(a=>`<div class="pe-cell ${a.date?'done':'pending'}" data-tip="${a.date?fd(a.date)+' · '+eur(a.montant):'Non appelé'}">${a.n}</div>`).join('')}
+        </div>
+        <div style="display:flex;gap:10px;font-size:.69rem;color:var(--txt3);margin-top:8px">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:rgba(74,158,255,.25);border:1px solid rgba(74,158,255,.3)"></span>Appelé</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:var(--bg4);border:1px solid var(--border)"></span>Non appelé</span>
+        </div>
+        <div style="margin-top:12px">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Date</th><th class="num">Montant</th><th class="num">Cumulé</th></tr></thead>
+            <tbody>${(()=>{let cum=0;return pe.appels.filter(a=>a.date&&a.montant).map(a=>{cum+=a.montant;return`<tr><td class="muted">${a.n}</td><td>${fd(a.date)}</td><td class="num bold">${eur(a.montant)}</td><td class="num muted">${eur(cum)}</td></tr>`}).join('')})()}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flux TRI -->
+    <div class="card">
+      <div class="card-title">Flux de trésorerie (base calcul TRI)</div>
+      <table class="tbl">
+        <thead><tr><th>Date</th><th>Type</th><th class="num">Flux</th></tr></thead>
+        <tbody>${flux.map(f=>`<tr><td>${fd(f.date)}</td><td class="muted">${f.montant<0?'Appel de fonds':f.montant>0&&f.date==='2023-06-30'?'Valeur résiduelle estimée':'Distribution'}</td><td class="num ${f.montant<0?'neg':'pos'}">${f.montant>0?'+':''}${eur(f.montant)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// STRUCT CARD HTML
+// ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// TRI / SCÉNARIOS STRUCTURÉS
+// ═══════════════════════════════════════════════════════
+
+function triStructure(s) {
+  // TRI réalisé pour un structuré remboursé
+  // Flux : -investi à souscription, +pnl_realise+coupons+investi à sortie
+  if (s.statut !== 'REMBOURSÉ' || !s.investi || !s.sortie) return null;
+  const t0 = new Date(s.souscription).getTime();
+  const t1 = new Date(s.sortie).getTime();
+  const ans = (t1 - t0) / (365.25 * 24 * 3600 * 1000);
+  if (ans < 0.1) return null;
+  const totalCoupons = s.coupons.reduce(function(a,c){return a+c.total;}, 0);
+  const totalRecupere = s.investi + (s.pnl_realise||0) + totalCoupons;
+  return Math.pow(totalRecupere / s.investi, 1/ans) - 1;
+}
+
+function scenariosAutocall(s) {
+  // Pour un autocall EN COURS : calcule TRI par scénario
+  if (s.statut !== 'EN COURS' || s.type !== 'autocall') return null;
+  const today = new Date();
+  const t0 = new Date(s.souscription).getTime();
+  const results = [];
+
+  // Scénario par date de constatation future
+  const futureConstat = (s.dates_constatation||[]).filter(function(d){ return new Date(d) > today; });
+  futureConstat.forEach(function(d) {
+    const t1 = new Date(d).getTime();
+    const ans = (t1 - t0) / (365.25 * 24 * 3600 * 1000);
+    if (ans < 0.05 || !s.investi || !s.taux_sortie) return;
+    const couponAccumule = s.investi * s.taux_sortie * ans;
+    const totalRecupere = s.investi + couponAccumule;
+    const tri = Math.pow(totalRecupere / s.investi, 1/ans) - 1;
+    results.push({
+      label: 'Autocall ' + fd(d),
+      date: d,
+      ans: ans,
+      coupon: couponAccumule,
+      total: totalRecupere,
+      tri: tri,
+      type: 'autocall'
+    });
+  });
+
+  // Scénario échéance finale
+  if (s.echeance && s.investi) {
+    const t1 = new Date(s.echeance).getTime();
+    const ans = (t1 - t0) / (365.25 * 24 * 3600 * 1000);
+    if (s.taux_sortie) {
+      const couponAccumule = s.investi * s.taux_sortie * ans;
+      const totalRecupere = s.investi + couponAccumule;
+      const tri = Math.pow(totalRecupere / s.investi, 1/ans) - 1;
+      results.push({
+        label: 'Échéance finale ' + fd(s.echeance),
+        date: s.echeance,
+        ans: ans,
+        coupon: couponAccumule,
+        total: totalRecupere,
+        tri: tri,
+        type: 'echeance_favorable'
+      });
+    }
+    // Scénario barrière franchie
+    if (s.conditions && s.conditions.barriere_capital) {
+      results.push({
+        label: 'Scénario défavorable (barrière ' + Math.round(s.conditions.barriere_capital*100) + '%)',
+        date: s.echeance,
+        ans: ans,
+        coupon: 0,
+        total: s.investi * s.conditions.barriere_capital,
+        tri: Math.pow(s.conditions.barriere_capital, 1/ans) - 1,
+        type: 'barriere'
+      });
+    }
+  }
+  return results;
+}
+
+function scenariosTaux(s) {
+  // Pour un produit taux EN COURS : coupon conditionnel + autocall potentiel
+  if (s.statut !== 'EN COURS' || s.type !== 'taux') return null;
+  const today = new Date();
+  const t0 = new Date(s.souscription).getTime();
+  const results = [];
+
+  if (!s.investi || !s.echeance) return null;
+  const tEch = new Date(s.echeance).getTime();
+  const ansTotal = (tEch - t0) / (365.25 * 24 * 3600 * 1000);
+
+  // Scénario favorable : tous les coupons versés chaque année
+  if (s.conditions && s.conditions.coupon_taux) {
+    const couponsRecu = s.coupons.reduce(function(a,c){return a+c.total;}, 0);
+    const ansFutur = (tEch - today.getTime()) / (365.25 * 24 * 3600 * 1000);
+    const couponsRestants = s.investi * s.conditions.coupon_taux * ansFutur;
+    const totalFavorable = s.investi + couponsRecu + couponsRestants;
+    const triFav = Math.pow(totalFavorable / s.investi, 1/ansTotal) - 1;
+    results.push({
+      label: 'Favorable — tous coupons (' + (s.conditions.coupon_taux*100).toFixed(0) + '%/an)',
+      coupon: couponsRecu + couponsRestants,
+      total: totalFavorable,
+      tri: triFav,
+      type: 'favorable'
+    });
+  }
+  // Scénario autocall (taux)
+  if (s.conditions && s.conditions.autocall_si_cms_inf) {
+    const futureConstat = (s.dates_constatation||[]).filter(function(d){ return new Date(d) > today; });
+    if (futureConstat.length) {
+      const d = futureConstat[0];
+      const ans = (new Date(d).getTime() - t0) / (365.25 * 24 * 3600 * 1000);
+      const couponsRecu = s.coupons.reduce(function(a,c){return a+c.total;}, 0);
+      const couponProchain = s.conditions.coupon_taux ? s.investi * s.conditions.coupon_taux : 0;
+      const total = s.investi + couponsRecu + couponProchain;
+      const tri = Math.pow(total / s.investi, 1/ans) - 1;
+      results.push({
+        label: 'Autocall ' + fd(d) + ' (CMS ≤ ' + s.conditions.autocall_si_cms_inf + '%)',
+        date: d,
+        coupon: couponsRecu + couponProchain,
+        total: total,
+        tri: tri,
+        type: 'autocall'
+      });
+    }
+  }
+  if (s.capital_garanti_echeance) {
+    results.push({
+      label: "Défavorable — capital seul à l'échéance",
+      coupon: 0,
+      total: s.investi,
+      tri: 0,
+      type: 'defavorable'
+    });
+  }
+  return results.length ? results : null;
+}
+
+function scHTML(s){
+  var ec=s.statut==='EN COURS';
+  var col=ec?'var(--blue)':'var(--green)';
+  var tcol={autocall:'var(--purple)',taux:'var(--cyan)'}[s.type]||'var(--txt3)';
+  var totalC=s.coupons.reduce(function(a,c){return a+c.total;},0);
+  var nextConstat=s.dates_constatation&&s.dates_constatation.find(function(d){return new Date(d)>new Date();});
+
+  // TRI réalisé (remboursés)
+  var triReal=null;
+  if(!ec) triReal=triStructure(s);
+
+  // Scénarios (en cours)
+  var scenarios=null;
+  if(ec && s.type==='autocall') scenarios=scenariosAutocall(s);
+  if(ec && s.type==='taux') scenarios=scenariosTaux(s);
+
+  // Build base values row
+  var valsHTML='';
+  if(s.investi!=null) valsHTML+='<div class="sc-vb"><div class="sc-vl">Investi</div><div class="sc-vv">'+eur(s.investi)+'</div></div>';
+  if(ec&&s.val!=null) valsHTML+='<div class="sc-vb"><div class="sc-vl">Valeur actuelle</div><div class="sc-vv">'+eur(s.val)+'</div></div>';
+  if(ec&&s.pnl_latent!=null) valsHTML+='<div class="sc-vb"><div class="sc-vl">P&L latent</div><div class="sc-vv">'+pnlStr(s.pnl_latent,true,s.investi)+'</div></div>';
+  if(!ec&&s.pnl_realise!=null) valsHTML+='<div class="sc-vb"><div class="sc-vl">P&L réalisé</div><div class="sc-vv">'+pnlStr(s.pnl_realise,true,s.investi)+'</div></div>';
+  if(totalC>0) valsHTML+='<div class="sc-vb"><div class="sc-vl">Coupons reçus</div><div class="sc-vv"><span class="coupon-tag">+'+eur(totalC)+'</span></div></div>';
+  if(!ec&&triReal!=null) valsHTML+='<div class="sc-vb"><div class="sc-vl">TRI réalisé</div><div class="sc-vv" style="color:'+(triReal>0.05?'var(--green)':triReal>0?'var(--orange)':'var(--red)')+'">'+( triReal*100).toFixed(1).replace('.',',')+'%/an</div></div>';
+  valsHTML+='<div class="sc-vb"><div class="sc-vl">'+(ec?'Échéance':'Sortie')+'</div><div class="sc-vv" style="font-size:.8rem">'+fd(ec?s.echeance:s.sortie)+'</div></div>';
+  if(ec&&nextConstat) valsHTML+='<div class="sc-vb"><div class="sc-vl">Proch. constatation</div><div class="sc-vv" style="font-size:.8rem;color:var(--gold)">'+fd(nextConstat)+'</div></div>';
+  if(!ec&&s.motif) valsHTML+='<div class="sc-vb"><div class="sc-vl">Motif sortie</div><div style="font-size:.76rem;color:var(--txt2)">'+s.motif+'</div></div>';
+
+  // Build scenarios block
+  var scenHTML='';
+  if(ec && scenarios && scenarios.length){
+    var typeColors={'autocall':'var(--purple)','echeance_favorable':'var(--green)','barriere':'var(--red)','defavorable':'var(--red)','favorable':'var(--green)'};
+    scenHTML='<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">'
+      +'<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);font-family:monospace;margin-bottom:8px">Scénarios de rendement</div>'
+      +'<div style="display:grid;gap:6px">';
+    scenarios.forEach(function(sc){
+      var triCol=sc.tri>0.06?'var(--green)':sc.tri>0.02?'var(--orange)':sc.tri>=0?'var(--txt2)':'var(--red)';
+      var bgCol=sc.type==='barriere'||sc.type==='defavorable'?'rgba(240,107,107,.06)':sc.type==='autocall'?'rgba(155,127,252,.06)':'rgba(46,204,138,.06)';
+      scenHTML+='<div style="background:'+bgCol+';border-radius:7px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px">'
+        +'<div>'
+        +'<div style="font-size:.76rem;font-weight:600;color:var(--txt2)">'+sc.label+'</div>'
+        +(sc.ans?'<div style="font-size:.69rem;color:var(--txt3)">dans '+sc.ans.toFixed(1).replace('.',',')+'ans · récupère '+eur(sc.total)+(sc.coupon>0?' dont '+eur(sc.coupon)+' coupons':'')+'</div>':'')
+        +'</div>'
+        +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;color:'+triCol+'">'+( sc.tri*100).toFixed(1).replace('.',',')+'%/an</div>'
+        +'<div style="font-size:.65rem;color:var(--txt3)">TRI</div>'
+        +'</div>'
+        +'</div>';
+    });
+    scenHTML+='</div>'
+      +'<div style="margin-top:7px;font-size:.69rem;color:var(--txt3);line-height:1.5">'
+      +'ℹ Le P&L latent mesure la valeur de marché aujourd\'hui. Le TRI mesure le rendement réel si le scénario se réalise — la vraie performance des structurés ne se voit qu\'au dénouement.'
+      +'</div>'
+      +'</div>';
+  }
+
+  return '<div class="sc">'
+    +'<div class="sc-bar" style="background:'+col+'"></div>'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px">'
+    +'<div class="sc-name">'+s.nom+'</div>'
+    +'<span class="status '+(ec?'s-ec':'s-re')+'">'+s.statut+'</span>'
+    +'</div>'
+    +'<div class="sc-meta">'
+    +(s.isin?'<span class="isin">'+s.isin+'</span>':'')
+    +'<span style="color:'+tcol+'">'+s.type+'</span>'
+    +'<span>'+s.sous_jacent+'</span>'
+    +'<span>'+s.emetteur+'</span>'
+    +'<span>'+envName(s.env)+'</span>'
+    +'</div>'
+    +'<div class="sc-vals">'+valsHTML+'</div>'
+    +scenHTML
+    +(s.note?'<div style="margin-top:7px;font-size:.72rem;color:var(--txt3);padding:5px 8px;background:var(--bg3);border-radius:5px">'+s.note+'</div>':'')
+    +(ec&&s.capital_garanti_echeance?'<div style="margin-top:5px"><span class="bg-ok" style="font-size:.67rem">✓ Capital garanti à l\'échéance</span></div>':'')
+    +'</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// TIMELINE
+// ═══════════════════════════════════════════════════════
+function renderTimeline(){
+  _calDate = _calDate || new Date();
+  renderCalendar(_calDate);
+}
+
+let _calDate = new Date();
+let _calSelectedDay = null;
+
+function getAllEvents(){
+  const today = new Date();
+  const events = [];
+
+  // ── Rachats AV UBS
+  const rachatsUBS = D.enveloppes.find(e=>e.id==='av_ubs').rachats||[];
+  rachatsUBS.forEach(function(r){
+    events.push({date:r.date,nom:'Rachat AV UBS',desc:eur(r.montant)+' — '+r.note,type:'rachat',couleur:'#F06B6B'});
+  });
+
+  // ── Remboursements Lombard
+  D.lombard.remboursements.forEach(function(r){
+    events.push({date:r.date,nom:'Remb. Lombard',desc:'-'+eur(r.montant)+(r.note?' — '+r.note:''),type:'lombard',couleur:'#2ECC8A'});
+  });
+
+  // ── Structurés EN COURS : constatations + échéances
+  D.structures.filter(function(s){return s.statut==='EN COURS';}).forEach(function(s){
+    var shortName = s.nom.length>30?s.nom.slice(0,28)+'…':s.nom;
+    if(s.echeance) events.push({date:s.echeance,nom:shortName,desc:'Échéance finale — '+envName(s.env),type:'echeance',couleur:'#F06B6B'});
+    (s.dates_constatation||[]).forEach(function(d){
+      var typeLabel = s.type==='taux'?'Coupon conditionnel':'Look autocall';
+      events.push({date:d,nom:shortName,desc:typeLabel+' — '+envName(s.env),type:s.type==='taux'?'coupon':'autocall',couleur:s.type==='taux'?'#22C8E0':'#9B7FFC'});
+    });
+    (s.coupons||[]).forEach(function(c){
+      events.push({date:c.date,nom:shortName,desc:'Coupon '+eur(c.total)+' — '+envName(s.env),type:'coupon_recu',couleur:'#C9A84C'});
+    });
+  });
+
+  // ── Structurés REMBOURSÉS
+  D.structures.filter(function(s){return s.statut==='REMBOURSÉ';}).forEach(function(s){
+    if(s.sortie) events.push({date:s.sortie,nom:s.nom.length>30?s.nom.slice(0,28)+'…':s.nom,desc:'Autocall — P&L '+eur(s.pnl_realise),type:'autocall_realise',couleur:'#2ECC8A'});
+  });
+
+  // ── PE
+  D.pe.appels.filter(function(a){return a.date&&a.montant;}).forEach(function(a){
+    events.push({date:a.date,nom:'PE Global Strategies',desc:'Appel n°'+a.n+' — '+eur(a.montant),type:'appel_pe',couleur:'#F59340'});
+  });
+  D.pe.distributions.forEach(function(d){
+    events.push({date:d.date,nom:'PE Global Strategies',desc:'Distribution '+eur(d.montant),type:'distribution',couleur:'#C9A84C'});
+  });
+
+  // ── Arbitrages FANTOM
+  var arbs = [
+    {date:'2025-03-06',desc:'Arb. 50k → Alizé 5A Oil&Gas 2025'},
+    {date:'2025-06-30',desc:'Arb. 100k → Atlas CMS EUR 10Y 25'},
+    {date:'2025-10-07',desc:'Arb. 50k → Alizé O2 Oil&Gas + Santé'},
+    {date:'2026-02-16',desc:'Arb. 100k → Alizé O2 European Industrials 2026'}
+  ];
+  arbs.forEach(function(a){
+    events.push({date:a.date,nom:'Arbitrage FANTOM',desc:a.desc,type:'arbitrage',couleur:'#4A9EFF'});
+  });
+
+  return events;
+}
+
+const CAL_TYPES = {
+  rachat:        {label:'Rachat AV UBS',    couleur:'#F06B6B'},
+  lombard:       {label:'Remb. Lombard',    couleur:'#2ECC8A'},
+  echeance:      {label:'Échéance structuré',couleur:'#F06B6B'},
+  autocall:      {label:'Look autocall',    couleur:'#9B7FFC'},
+  coupon:        {label:'Coupon cond.',     couleur:'#22C8E0'},
+  coupon_recu:   {label:'Coupon reçu',      couleur:'#C9A84C'},
+  autocall_realise:{label:'Autocall réalisé',couleur:'#2ECC8A'},
+  appel_pe:      {label:'Appel PE',         couleur:'#F59340'},
+  distribution:  {label:'Distribution PE',  couleur:'#C9A84C'},
+  arbitrage:     {label:'Arbitrage',        couleur:'#4A9EFF'}
+};
+
+function renderCalendar(d){
+  _calDate = d;
+  const year = d.getFullYear(), month = d.getMonth();
+  const today = new Date();
+  const allEvts = getAllEvents();
+
+  // Month label
+  document.getElementById('cal-month-label').textContent =
+    d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+
+  // Legend
+  var legendHTML = '';
+  Object.values(CAL_TYPES).forEach(function(t){
+    legendHTML += '<span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:var(--txt2)">'
+      +'<span style="width:8px;height:8px;border-radius:50%;background:'+t.couleur+'"></span>'
+      +t.label+'</span>';
+  });
+  document.getElementById('cal-legend').innerHTML = legendHTML;
+
+  // Build day → events map for this month
+  var dayMap = {};
+  allEvts.forEach(function(e){
+    if(!e.date||e.date==='À venir') return;
+    var ed = new Date(e.date);
+    if(ed.getFullYear()===year && ed.getMonth()===month){
+      var key = ed.getDate();
+      if(!dayMap[key]) dayMap[key] = [];
+      dayMap[key].push(e);
+    }
+  });
+
+  // Calendar grid
+  var firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  firstDay = (firstDay+6)%7; // Mon=0
+  var daysInMonth = new Date(year, month+1, 0).getDate();
+  var dayLabels = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+  var grid = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-radius:10px;overflow:hidden">';
+
+  // Day headers
+  dayLabels.forEach(function(dl){
+    grid += '<div style="background:var(--bg2);padding:7px 4px;text-align:center;font-size:.68rem;color:var(--txt3);font-family:monospace;font-weight:500">'+dl+'</div>';
+  });
+
+  // Empty cells before first day
+  for(var i=0;i<firstDay;i++){
+    grid += '<div style="background:var(--bg1);min-height:80px;padding:4px"></div>';
+  }
+
+  // Day cells
+  for(var day=1;day<=daysInMonth;day++){
+    var isToday = (year===today.getFullYear()&&month===today.getMonth()&&day===today.getDate());
+    var isSelected = (_calSelectedDay===year+'-'+(month+1)+'-'+day);
+    var evts = dayMap[day]||[];
+    var isPast = new Date(year,month,day) < new Date(today.getFullYear(),today.getMonth(),today.getDate());
+
+    var cellBg = isSelected?'var(--bg3)':isToday?'rgba(74,158,255,0.08)':'var(--bg1)';
+    var dayNumStyle = isToday
+      ? 'width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700'
+      : 'font-size:.75rem;color:'+(isPast?'var(--txt3)':'var(--txt)')+';font-weight:'+(evts.length?'600':'400');
+
+    // Dots for events (max 4 visible)
+    var dots = '';
+    var shown = evts.slice(0,4);
+    shown.forEach(function(e){
+      dots += '<span style="width:6px;height:6px;border-radius:50%;background:'+e.couleur+';flex-shrink:0"></span>';
+    });
+    if(evts.length>4) dots += '<span style="font-size:.55rem;color:var(--txt3)">+'+( evts.length-4)+'</span>';
+
+    var hasEvts = evts.length > 0;
+    var evtPills = '';
+    evts.slice(0,2).forEach(function(e){
+      var lbl = e.nom.length>15 ? e.nom.slice(0,14)+'\u2026' : e.nom;
+      evtPills += '<div style="display:flex;align-items:center;gap:3px;background:'+e.couleur+'25;border-left:2px solid '+e.couleur+';border-radius:3px;padding:2px 5px;margin-top:3px">'
+        +'<span style="width:5px;height:5px;border-radius:50%;background:'+e.couleur+';flex-shrink:0"></span>'
+        +'<span style="font-size:.59rem;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:68px">'+lbl+'</span>'
+        +'</div>';
+    });
+    if(evts.length>2) evtPills += '<div style="font-size:.58rem;color:var(--txt3);padding:0 4px">+' + (evts.length-2) + ' autres</div>';
+
+    var dayKey = year+'-'+(month+1)+'-'+day;
+    var cellBorder = isSelected ? '2px solid var(--blue)' : hasEvts ? '1px solid var(--border2)' : '1px solid transparent';
+    var cellBgFinal = isSelected ? 'var(--bg3)' : isToday ? 'rgba(74,158,255,0.10)' : hasEvts ? 'var(--bg2)' : 'var(--bg1)';
+    grid += '<div style="background:'+cellBgFinal+';min-height:90px;padding:6px 6px 4px;cursor:'+(hasEvts?'pointer':'default')+';transition:.15s;border:'+cellBorder+';box-sizing:border-box"'
+      +(hasEvts?' data-cal-day="'+dayKey+'"':'')+'>'  
+      +'<div style="'+dayNumStyle+'">'+day+'</div>'
+      +(hasEvts?evtPills:'')
+      +'</div>';
+  }
+
+  // Trailing empty cells
+  var totalCells = firstDay + daysInMonth;
+  var remainder = totalCells%7;
+  if(remainder>0){
+    for(var j=remainder;j<7;j++){
+      grid += '<div style="background:var(--bg1);min-height:80px;padding:4px"></div>';
+    }
+  }
+  grid += '</div>';
+
+  document.getElementById('cal-grid').innerHTML = grid;
+
+  // If a day was selected, re-render its detail
+  if(_calSelectedDay) renderDayDetail(_calSelectedDay, allEvts);
+  else document.getElementById('cal-day-detail').innerHTML='<div style="text-align:center;padding:20px;font-size:.82rem;color:var(--txt3)">Cliquez sur un jour pour voir le détail des événements</div>';
+
+  // Nav buttons
+  document.getElementById('cal-prev').onclick = function(){ renderCalendar(new Date(year,month-1,1)); };
+  document.getElementById('cal-next').onclick = function(){ renderCalendar(new Date(year,month+1,1)); };
+  document.getElementById('cal-today').onclick = function(){ _calSelectedDay=null; renderCalendar(new Date()); };
+}
+
+function selectCalDay(dayKey){
+  _calSelectedDay = dayKey;
+  var allEvts = getAllEvents();
+  renderCalendar(_calDate); // re-render to update selection highlight
+}
+
+function renderDayDetail(dayKey, allEvts){
+  var parts = dayKey.split('-');
+  var year=parseInt(parts[0]),month=parseInt(parts[1])-1,day=parseInt(parts[2]);
+  var d = new Date(year,month,day);
+  var dayEvts = allEvts.filter(function(e){
+    if(!e.date||e.date==='À venir') return false;
+    var ed=new Date(e.date);
+    return ed.getFullYear()===year&&ed.getMonth()===month&&ed.getDate()===day;
+  });
+  if(!dayEvts.length){
+    document.getElementById('cal-day-detail').innerHTML='<div style="padding:12px 0;text-align:center;font-size:.82rem;color:var(--txt3)">Aucun événement ce jour</div>';
+    return;
+  }
+  var label = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var html='<div style="margin-top:6px">'
+    +'<div style="font-family:Syne,sans-serif;font-weight:600;font-size:.9rem;margin-bottom:10px;color:var(--txt)">'+label+'</div>';
+  dayEvts.forEach(function(e){
+    html+='<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border-left:3px solid '+e.couleur+'">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:'+e.couleur+';margin-top:4px;flex-shrink:0"></div>'
+      +'<div>'
+      +'<div style="font-weight:600;font-size:.83rem">'+e.nom+'</div>'
+      +'<div style="font-size:.76rem;color:var(--txt3);margin-top:2px">'+e.desc+'</div>'
+      +'</div></div>';
+  });
+  html+='</div>';
+  document.getElementById('cal-day-detail').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════
+// ENVELOPPES// ═══════════════════════════════════════════════════════
+// ENVELOPPES
+// ═══════════════════════════════════════════════════════
+function renderEnveloppes(){
+  document.getElementById('all-env-cards').innerHTML=D.enveloppes.map(e=>envCardHTML(e)).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// STRUCTURÉS
+// ═══════════════════════════════════════════════════════
+function renderStructures(){
+  const ec=D.structures.filter(s=>s.statut==='EN COURS');
+  const re=D.structures.filter(s=>s.statut==='REMBOURSÉ');
+  const valEc=ec.reduce((a,s)=>a+(s.val||0),0);
+  const pnlLat=ec.reduce((a,s)=>a+(s.pnl_latent||0),0);
+  const pnlReal=re.reduce((a,s)=>a+(s.pnl_realise||0),0);
+  const totalC=D.structures.flatMap(s=>s.coupons).reduce((a,c)=>a+c.total,0);
+
+  // TRI moyen des remboursés
+  var triList=re.map(function(s){return triStructure(s);}).filter(function(t){return t!=null;});
+  var triMoyen=triList.length?triList.reduce(function(a,t){return a+t;},0)/triList.length:null;
+  var investiEc=ec.reduce(function(a,s){return a+(s.investi||0);},0);
+
+  document.getElementById('struct-kpis').innerHTML=
+    '<div class="kpi" style="--kpi-color:var(--blue);min-width:150px"><div class="kpi-label">Valeur en cours</div><div class="kpi-value" style="font-size:1.05rem">'+eur(valEc)+'</div>'
+    +'<div class="kpi-sub">investi '+eur(investiEc)+'</div></div>'
+    +'<div class="kpi" style="--kpi-color:'+(pnlLat>=0?'var(--green)':'var(--red)')+';min-width:150px"><div class="kpi-label">P&L latent (marché)</div><div class="kpi-value" style="font-size:1.05rem;color:'+(pnlLat>=0?'var(--green)':'var(--red)')+'">'+(pnlLat>=0?'+':'')+eur(pnlLat)+'</div>'
+    +'<div class="kpi-sub" style="color:var(--txt3);font-size:.67rem">Valeur de marché — pas le vrai rendement</div></div>'
+    +'<div class="kpi" style="--kpi-color:var(--green);min-width:150px"><div class="kpi-label">P&L réalisé</div><div class="kpi-value" style="font-size:1.05rem;color:var(--green)">+'+eur(pnlReal)+'</div>'
+    +(triMoyen?'<div class="kpi-sub"><span class="bp">TRI moy. '+(triMoyen*100).toFixed(1).replace('.',',')+'%/an</span></div>':'')+'</div>'
+    +'<div class="kpi" style="--kpi-color:var(--gold);min-width:150px"><div class="kpi-label">Coupons reçus</div><div class="kpi-value" style="font-size:1.05rem;color:var(--gold)">+'+eur(totalC)+'</div>'
+    +'<div class="kpi-sub">vrai cash encaissé</div></div>';
+  document.getElementById('cnt-ec').textContent=`(${ec.length})`;
+  document.getElementById('cnt-re').textContent=`(${re.length})`;
+  document.getElementById('structs-ec').innerHTML=ec.map(s=>scHTML(s)).join('');
+  document.getElementById('structs-re').innerHTML=re.map(s=>scHTML(s)).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// LOMBARD
+// ═══════════════════════════════════════════════════════
+function renderLombard(){
+  const L=D.lombard,solde=soldeLombard(),totR=L.remboursements.reduce((a,r)=>a+r.montant,0),ltvV=ltv();
+  const collat=ltvCollatéral();
+  const ubsVal=valEnv('av_ubs'),fantomVal=valEnv('av_cnp_fantom');
+  // Reconstitution chronologique avec re-tirages
+  const allFlux=[
+    {date:L.date,montant:L.initial,type:'tirage',label:'Tirage initial'},
+    ...L.retirages.map(r=>({date:r.date,montant:r.montant,type:'tirage',label:r.note})),
+    ...L.remboursements.map(r=>({date:r.date,montant:-r.montant,type:'remb',label:r.note||'Remboursement'}))
+  ].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let cumFlux=0;
+  const fluxRows=allFlux.map(f=>{cumFlux+=f.montant;return`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="font-family:DM Mono,monospace;font-size:.71rem;color:var(--txt3);min-width:72px">${fd(f.date)}</div>
+      <div style="flex:1">
+        <div style="font-size:.75rem;color:var(--txt2)">${f.label}</div>
+        <div class="prog-bar" style="margin:2px 0 0"><div class="prog-fill" style="width:${Math.abs(f.montant)/L.initial*100}%;background:${f.type==='tirage'?'var(--red)':'var(--green)'}"></div></div>
+      </div>
+      <div style="font-family:Syne,sans-serif;font-weight:600;font-size:.88rem;color:${f.type==='tirage'?'var(--red)':'var(--green)'};min-width:90px;text-align:right">${f.montant>0?'+':''}${eur(f.montant)}</div>
+      <div style="font-family:DM Mono,monospace;font-size:.71rem;color:var(--txt3);min-width:85px;text-align:right">${eur(cumFlux)}</div>
+    </div>`}).join('');
+
+  document.getElementById('lombard-content').innerHTML=`
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">Situation actuelle</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:15px">
+          <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Solde estimé</div><div style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:700;color:var(--red)">${eur(solde)}</div><div style="font-size:.68rem;color:var(--txt3);margin-top:2px">CGP fév. 2026 : ${eur(L.solde_cgp_fevrier2026)}</div></div>
+          <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Plafond ligne</div><div style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:700">${eur(L.plafond_actuel)}</div><div style="font-size:.68rem;color:var(--txt3);margin-top:2px">utilisé ${pct(solde/L.plafond_actuel,0)}</div></div>
+          <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">LTV collatéral total</div><div style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:700;color:${ltvV>=0.65?'var(--red)':ltvV>=0.55?'var(--orange)':'var(--green)'}">${pct(ltvV)}</div></div>
+          <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Buffer avant alerte</div><div style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:700;color:var(--green)">${eur(collat*0.65-solde)}</div><div style="font-size:.68rem;color:var(--txt3);margin-top:2px">marge avant 65%</div></div>
+        </div>
+        <div style="font-size:.72rem;color:var(--txt3);margin-bottom:5px;font-family:DM Mono,monospace">Jauge LTV — seuil alerte 65%</div>
+        <div class="ltv-bg"><div class="ltv-fill" style="width:${Math.min(ltvV*100,100).toFixed(1)}%"></div><div class="ltv-seuil" style="left:65%"></div></div>
+        <div class="ltv-zones"><span>0%</span><span style="color:var(--orange)">65%</span><span>100%</span></div>
+        <div style="margin-top:12px;padding:9px 11px;background:var(--bg3);border-radius:7px;font-size:.74rem;color:var(--txt2);line-height:1.7">
+          <strong style="color:var(--txt)">Conv. ${L.convention}</strong> · ${L.preteur}<br>
+          Nanti sur : AV UBS (182000187) ${eur(ubsVal)} + AV FANTOM (A7A001415) ${eur(fantomVal)}<br>
+          <strong style="color:var(--txt)">Collatéral total : ${eur(collat)}</strong> · Depuis ${fd(L.date)}
+        </div>
+        <div style="margin-top:10px">
+          <div style="font-size:.73rem;font-weight:600;color:var(--txt2);margin-bottom:7px">Utilisation des ${eur(L.initial)} initiaux</div>
+          ${Object.entries(L.utilisation).map(([k,v])=>{
+            const labels={impots:'Impôts (IFI/IR)',pe_global_strategies:'PE Global Strategies',depenses_courantes:'Dépenses courantes / trésorerie'};
+            return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+              <div style="font-size:.75rem;color:var(--txt2);min-width:200px">${labels[k]||k}</div>
+              <div style="flex:1"><div class="prog-bar" style="margin:0"><div class="prog-fill" style="width:${(v/L.initial*100).toFixed(1)}%;background:var(--blue)"></div></div></div>
+              <div style="font-family:DM Mono,monospace;font-size:.75rem;min-width:80px;text-align:right">${eur(v)}</div>
+            </div>`;}).join('')}
+        </div>
+        <div style="margin-top:8px;padding:7px 10px;background:rgba(245,147,64,.07);border:1px solid rgba(245,147,64,.15);border-radius:5px;font-size:.7rem;color:var(--txt3)">
+          ⚠ ${L.solde_note}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Chronologie complète</div>
+        <div style="display:flex;justify-content:space-between;font-size:.66rem;color:var(--txt3);font-family:DM Mono,monospace;padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:2px">
+          <span>Date</span><span style="flex:1;margin:0 8px">Opération</span><span style="min-width:90px;text-align:right">Flux</span><span style="min-width:85px;text-align:right">Solde</span>
+        </div>
+        ${fluxRows}
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:8px;font-size:.7rem;color:var(--txt3)">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:4px;background:var(--red);border-radius:2px"></span>Tirage</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:4px;background:var(--green);border-radius:2px"></span>Remboursement</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// PERFORMANCE ANALYSIS
+// ═══════════════════════════════════════════════════════
+const EURIBOR_H=[
+  {d:'2021-09-13',r:-.0055},{d:'2022-01-01',r:-.0057},{d:'2022-07-01',r:.0000},
+  {d:'2022-12-31',r:.0199},{d:'2023-06-30',r:.0353},{d:'2023-12-31',r:.0392},
+  {d:'2024-06-30',r:.0370},{d:'2024-12-31',r:.0290},{d:'2025-06-30',r:.0245},
+  {d:'2026-02-16',r:.0245}
+];
+const SPREAD=0.005;
+let _perfScope='ubs'; // 'ubs' | 'ubs_fantom'
+
+function getEuribor(ds){
+  const d=new Date(ds);let l=EURIBOR_H[0];
+  for(const h of EURIBOR_H){if(new Date(h.d)<=d)l=h;else break;}
+  return l.r;
+}
+
+// Retourne les snapshots consolidés selon le scope sélectionné
+// scope='ubs' : AV UBS seule (corrigée rachats)
+// scope='ubs_fantom' : AV UBS + AV FANTOM (pondéré par valeur, depuis 2023-12-31 seulement)
+function ubsInterpolate(ubsSnaps, dateStr){
+  // Interpole linéairement la valeur UBS à une date donnée entre deux snapshots connus
+  const d=new Date(dateStr).getTime();
+  const sorted=ubsSnaps.slice().sort((a,b)=>new Date(a.date)-new Date(b.date));
+  // Trouve les deux snaps encadrant la date
+  let before=null, after=null;
+  for(const s of sorted){
+    const sd=new Date(s.date).getTime();
+    if(sd<=d) before=s;
+    else if(!after) after=s;
+  }
+  if(!before&&!after) return null;
+  if(!before) return after.val;
+  if(!after) return before.val;
+  if(before.date===after.date) return before.val;
+  const t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+  return before.val + (after.val-before.val)*t;
+}
+
+function getSnapsConsolides(scope){
+  const rachatsUBS=D.enveloppes.find(e=>e.id==='av_ubs').rachats_documentes||0;
+  const ubsSnaps=D.snapshots.filter(s=>s.env==='av_ubs').sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  if(scope==='ubs'){
+    // UBS avec rachats réintégrés progressivement — base 100 au premier point
+    const arr=ubsSnaps.slice();
+    const base=arr[0].val;
+    return arr.map((s,i)=>{
+      const valCor=s.val+rachatsUBS*(i/(arr.length-1||1));
+      return {date:s.date, val:(valCor/base)*100};
+    });
+  }
+
+  if(scope==='ubs_fantom'){
+    // Composite UBS+FANTOM en base 100
+    // Point de départ commun = premier snap FANTOM (2021-09-30)
+    // UBS interpolé à chaque date FANTOM (mensuelle) — pas de filtre par proximité
+    const fantomSnaps=D.snapshots.filter(s=>s.env==='av_cnp_fantom').sort((a,b)=>new Date(a.date)-new Date(b.date));
+    if(!fantomSnaps.length) return [];
+
+    const fantomFirst=fantomSnaps[0]; // 2021-09-30: 400 000€
+    // Valeur UBS interpolée au démarrage FANTOM
+    const ubsValAtStart=ubsInterpolate(ubsSnaps, fantomFirst.date);
+    if(!ubsValAtStart) return [];
+
+    // Rachats UBS : répartis linéairement sur la durée totale UBS
+    // On calcule la fraction de rachats accumulée à chaque date
+    const ubsFirst=ubsSnaps[0], ubsLast=ubsSnaps[ubsSnaps.length-1];
+    const ubsTotalMs=new Date(ubsLast.date)-new Date(ubsFirst.date);
+
+    // Poids initiaux (FANTOM 400k, UBS ~1 270k à la même époque fin 2021)
+    const ubsBase=ubsValAtStart;
+    const fantomBase=fantomFirst.val;
+    const totalBase=ubsBase+fantomBase;
+    const wUBS=ubsBase/totalBase, wF=fantomBase/totalBase;
+
+    const combined=[];
+    for(const fs of fantomSnaps){
+      // Valeur UBS interpolée à cette date
+      const ubsVal=ubsInterpolate(ubsSnaps, fs.date);
+      if(ubsVal==null) continue;
+      // Rachats accumulés jusqu'à cette date (proportion temporelle)
+      const elapsedMs=Math.max(0,new Date(fs.date)-new Date(ubsFirst.date));
+      const fracRachats=Math.min(1, elapsedMs/ubsTotalMs);
+      const ubsValCor=ubsVal+rachatsUBS*fracRachats;
+      // Rendement de chaque enveloppe depuis le point de départ commun
+      const rUBS=ubsValCor/ubsBase;
+      const rF=fs.val/fantomBase;
+      // Indice composite pondéré base 100
+      const idx=(wUBS*rUBS+wF*rF)*100;
+      combined.push({date:fs.date, val:idx});
+    }
+    return combined;
+  }
+  return [];
+}
+
+function rendAnnualise(scope){
+  scope=scope||_perfScope;
+  if(scope==='ubs'){
+    // TWRR: neutralise l'impact temporel des rachats — chaque rachat est traité à sa date exacte
+    const rachats=D.enveloppes.find(e=>e.id==='av_ubs').rachats||[];
+    const arr=D.snapshots.filter(s=>s.env==='av_ubs').sort((a,b)=>new Date(a.date)-new Date(b.date));
+    if(arr.length<2) return null;
+    const first=arr[0], last=arr[arr.length-1];
+    const totalAns=(new Date(last.date)-new Date(first.date))/(365.25*24*3600*1000);
+    if(totalAns<0.5) return null;
+    // Fonction d'interpolation
+    function ubsValAt(dateStr){
+      const d=new Date(dateStr).getTime();
+      let before=null, after=null;
+      for(const s of arr){
+        const sd=new Date(s.date).getTime();
+        if(sd<=d) before=s; else if(!after) after=s;
+      }
+      if(!before) return after.val;
+      if(!after) return before.val;
+      const t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+      return before.val+(after.val-before.val)*t;
+    }
+    // Jalons: ouverture + dates de rachats + point final
+    const milestones=[{date:first.date,rachat:0,snapPost:true}];
+    rachats.forEach(function(r){ milestones.push({date:r.date,rachat:r.montant,snapPost:r.snapPost!==false}); });
+    milestones.push({date:last.date,rachat:0,snapPost:true});
+    milestones.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+    // Produit TWRR sur sous-périodes
+    // snapPost=true  : snapshot à la date du rachat est POST-rachat → valAvantRachat = snap + rachat
+    // snapPost=false : snapshot à la date du rachat est PRÉ-rachat  → valAvantRachat = snap (pas d'ajout)
+    //                  le start de la sous-période suivante = snap - rachat
+    let twrrProduct=1;
+    let startVal=ubsValAt(milestones[0].date);
+    for(let i=0;i<milestones.length-1;i++){
+      const m=milestones[i+1];
+      const valObs=ubsValAt(m.date);
+      const snapPost=(m.snapPost!==false); // default true
+      const valAvantRachat = snapPost ? valObs+(m.rachat||0) : valObs;
+      const valApresRachat = snapPost ? valObs : valObs-(m.rachat||0);
+      if(startVal>0) twrrProduct*=valAvantRachat/startVal;
+      startVal=valApresRachat;
+    }
+    return Math.pow(twrrProduct,1/totalAns)-1;
+  }
+  if(scope==='ubs_fantom'){
+    return rendCompositeUBSFantom().composite;
+  }
+  return null;
+}
+
+function rendCompositeUBSFantom(){
+  const ubsSnaps=D.snapshots.filter(s=>s.env==='av_ubs').sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const fantomSnaps=D.snapshots.filter(s=>s.env==='av_cnp_fantom').sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  const fantomFirst=fantomSnaps[0];
+  const fantomLast=fantomSnaps[fantomSnaps.length-1];
+  if(!fantomFirst||!fantomLast) return {ubs:null,fantom:null,composite:null,ans:null};
+
+  const ans=(new Date(fantomLast.date)-new Date(fantomFirst.date))/(365.25*24*3600*1000);
+  if(ans<0.5) return {ubs:null,fantom:null,composite:null,ans:null};
+
+  // TWRR UBS sur la même période — utilise la même logique de jalons que rendAnnualise('ubs')
+  // mais restreinte à la fenêtre FANTOM
+  const rachats=D.enveloppes.find(e=>e.id==='av_ubs').rachats||[];
+  const arr=ubsSnaps;
+
+  function ubsValAtDate(dateStr){
+    const d=new Date(dateStr).getTime();
+    let before=null, after=null;
+    for(const s of arr){
+      const sd=new Date(s.date).getTime();
+      if(sd<=d) before=s; else if(!after) after=s;
+    }
+    if(!before) return after?after.val:null;
+    if(!after) return before.val;
+    const t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+    return before.val+(after.val-before.val)*t;
+  }
+
+  // Jalons UBS restreints à la fenêtre [fantomFirst, fantomLast]
+  const rachatsEnFenetre=rachats.filter(r=>new Date(r.date)>=new Date(fantomFirst.date)&&new Date(r.date)<=new Date(fantomLast.date));
+  const milestones=[{date:fantomFirst.date,rachat:0,snapPost:true}];
+  rachatsEnFenetre.forEach(r=>milestones.push({date:r.date,rachat:r.montant,snapPost:r.snapPost!==false}));
+  milestones.push({date:fantomLast.date,rachat:0,snapPost:true});
+  milestones.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  let twrrUBS=1;
+  let startVal=ubsValAtDate(milestones[0].date);
+  for(let i=0;i<milestones.length-1;i++){
+    const m=milestones[i+1];
+    const valObs=ubsValAtDate(m.date);
+    const snapPost=(m.snapPost!==false);
+    const valAvant = snapPost ? valObs+(m.rachat||0) : valObs;
+    const valApres = snapPost ? valObs : valObs-(m.rachat||0);
+    if(startVal&&startVal>0) twrrUBS*=valAvant/startVal;
+    startVal=valApres;
+  }
+  const rUBS_ann=Math.pow(twrrUBS,1/ans)-1;
+
+  // TWRR FANTOM simple (pas de flux externes)
+  const rF=fantomLast.val/fantomFirst.val;
+  const rF_ann=Math.pow(rF,1/ans)-1;
+
+  // Pondération initiale (poids fixes à l'ouverture FANTOM)
+  const ubsAtStart=ubsValAtDate(fantomFirst.date)||ubsSnaps[0].val;
+  const wUBS=ubsAtStart/(ubsAtStart+fantomFirst.val);
+  const wF=1-wUBS;
+
+  // Composite : moyenne géométrique pondérée sur la même durée
+  // rendement composite annualisé = (twrrUBS_total^wUBS × twrrF_total^wF)^(1/ans) - 1
+  const rComp_total=Math.pow(twrrUBS,wUBS)*Math.pow(rF,wF);
+  const rComp_ann=Math.pow(rComp_total,1/ans)-1;
+
+  return {
+    ubs: rUBS_ann,
+    fantom: rF_ann,
+    composite: rComp_ann,
+    ans, wUBS, wF,
+    startDate:fantomFirst.date, endDate:fantomLast.date
+  };
+}
+
+function rendNetLombard(scope){
+  const brut=rendAnnualise(scope);if(brut==null)return null;
+  const euriborActuel=getEuribor('2026-02-16');
+  return brut-(euriborActuel+SPREAD);
+}
+
+function setPerfScope(scope){
+  _perfScope=scope;
+  const euriborActuel=getEuribor('2026-02-16');
+  const coutActuel=(euriborActuel+SPREAD)*100;
+
+  if(scope==='ubs'){
+    const rB=rendAnnualise('ubs'),rN=rendNetLombard('ubs');
+    document.getElementById('perf-rbrut').innerHTML=(rB?(rB*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—');
+    document.getElementById('perf-rbrut').style.color=rB>0.03?'var(--green)':'var(--orange)';
+    document.getElementById('perf-rbrut-note').textContent='AV UBS seule — corrigée rachats (sept. 2021 → juin 2025)';
+    document.getElementById('perf-rnet').innerHTML=(rN!=null?(rN*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—');
+    document.getElementById('perf-rnet').style.color=rN>0?'var(--green)':'var(--red)';
+    document.getElementById('perf-scope-note').textContent='Historique complet depuis sept. 2021 — le plus fiable.';
+  } else {
+    const c=rendCompositeUBSFantom();
+    const rUBS=c.ubs,rF=c.fantom,rComp=c.composite;
+    // Show composite in main KPI, breakdown below
+    document.getElementById('perf-rbrut').innerHTML=
+      rComp?(rComp*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—';
+    document.getElementById('perf-rbrut').style.color=rComp>0.03?'var(--green)':'var(--orange)';
+    document.getElementById('perf-rbrut-note').innerHTML=
+      'Composite pondéré · '
+      +(c.wUBS?Math.round(c.wUBS*100)+'% UBS':'')+' / '+(c.wF?Math.round(c.wF*100)+'% FANTOM':'')
+      +'<br><span style="color:var(--blue)">'+(rUBS?(rUBS*100).toFixed(1).replace('.',',')+'% UBS':'')+' · '
+      +'<span style="color:var(--purple)">'+(rF?(rF*100).toFixed(1).replace('.',',')+'% FANTOM':'')+'</span></span>';
+    const rN=rComp!=null?rComp-(euriborActuel+SPREAD):null;
+    document.getElementById('perf-rnet').innerHTML=rN!=null?(rN*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—';
+    document.getElementById('perf-rnet').style.color=rN>0?'var(--green)':'var(--red)';
+    const startLabel=c.startDate?new Date(c.startDate).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'';
+    const endLabel=c.endDate?new Date(c.endDate).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'';
+    document.getElementById('perf-scope-note').textContent=
+      'Période commune '+startLabel+' → '+endLabel+' ('+Math.round(c.ans*10)/10+' ans). '
+      +'Période commune depuis ouv. FANTOM (oct. 2021). Rendements comparables directement.';
+  }
+
+  // Update scope buttons
+  document.querySelectorAll('.perf-scope-btn').forEach(function(b){
+    b.classList.toggle('active',b.id===(scope==='ubs'?'pb-ubs':'pb-ubs-f'));
+  });
+
+  initPerfChart(scope);
+}
+function renderPerf(){
+  const euriborActuel=getEuribor('2026-02-16');
+  const coutActuel=(euriborActuel+SPREAD)*100;
+  const rB=rendAnnualise('ubs'),rN=rendNetLombard('ubs');
+  const rachats=D.enveloppes.find(e=>e.id==='av_ubs').rachats_documentes||0;
+
+  // Tableau périodes pour AV UBS (scope ubs)
+  const snapsUBS=getSnapsConsolides('ubs');
+  const periods=[
+    {y:'2021→2022',s1:'2021-12-31',s2:'2022-12-31'},
+    {y:'2022→2023',s1:'2022-12-31',s2:'2023-09-30'},
+    {y:'2023→2024',s1:'2023-09-30',s2:'2024-11-29'},
+    {y:'2024→2025',s1:'2024-11-29',s2:'2025-06-30'}
+  ];
+  const perfRows=periods.map(row=>{
+    const s1=snapsUBS.find(s=>s.date===row.s1),s2=snapsUBS.find(s=>s.date===row.s2);
+    const euribor=getEuribor(row.s2);
+    const coutL=(euribor+SPREAD)*100;
+    let perf=null;
+    if(s1&&s2) perf=((s2.val-s1.val)/s1.val)*100;
+    return {y:row.y,perf,euribor:euribor*100,coutL};
+  });
+
+  return `
+    <div class="card" style="margin-top:18px" id="perf-card">
+      <div class="card-title">
+        Rendement annualisé vs coût Lombard
+        <div style="display:flex;gap:5px">
+          <button class="chart-sel-btn perf-scope-btn active" data-scope="ubs" onclick="setPerfScope('ubs')" style="font-size:.7rem;padding:3px 9px">AV UBS seule</button>
+          <button class="chart-sel-btn perf-scope-btn" data-scope="ubs_fantom" onclick="setPerfScope('ubs_fantom')" style="font-size:.7rem;padding:3px 9px">UBS + FANTOM</button>
+        </div>
+      </div>
+      <div id="perf-scope-note" style="font-size:.71rem;color:var(--txt3);margin-bottom:12px;font-family:DM Mono,monospace">Historique complet depuis sept. 2021 — le plus fiable.</div>
+      <div class="tri-box" style="margin-bottom:14px">
+        <div class="tri-item">
+          <label>Rendement brut annualisé</label>
+          <div class="val" id="perf-rbrut" style="color:${rB>0.03?'var(--green)':'var(--orange)'}">${rB?(rB*100).toFixed(1).replace('.',',')+' %/an':'—'}</div>
+          <small id="perf-rbrut-note" style="font-size:.63rem;color:var(--txt3)">AV UBS seule (corrigée rachats)</small>
+        </div>
+        <div class="tri-item">
+          <label>Coût Lombard actuel</label>
+          <div class="val" style="color:var(--red)">${coutActuel.toFixed(2).replace('.',',')} %/an</div>
+          <small style="font-size:.63rem;color:var(--txt3)">Euribor ${(euriborActuel*100).toFixed(2)}% + spread 0,50%</small>
+        </div>
+        <div class="tri-item">
+          <label>Rendement net Lombard</label>
+          <div class="val" id="perf-rnet" style="color:${rN>0?'var(--green)':'var(--red)'}">${rN?(rN*100).toFixed(1).replace('.',',')+' %/an':'—'}</div>
+          <small style="font-size:.63rem;color:var(--txt3)">Différentiel rendement − coût</small>
+        </div>
+      </div>
+      <canvas id="chart-perf" style="max-height:195px;margin-bottom:14px"></canvas>
+      <div class="sec-title" style="font-size:.82rem;margin-bottom:8px">Détail par période — AV UBS</div>
+      <table class="tbl">
+        <thead><tr><th>Période</th><th class="num">Perf. AV UBS</th><th class="num">Euribor 3M</th><th class="num">Coût Lombard</th><th class="num">Différentiel</th></tr></thead>
+        <tbody>\${perfRows.map(d=>\`
+          <tr>
+            <td class="bold">\${d.y}</td>
+            <td class="num \${d.perf!=null?(d.perf>=0?'pos':'neg'):'muted'}">\${d.perf!=null?(d.perf>=0?'+':'')+d.perf.toFixed(1).replace('.',',')+'%':'—'}</td>
+            <td class="num muted">\${d.euribor.toFixed(2).replace('.',',')}%</td>
+            <td class="num" style="color:var(--red)">\${d.coutL.toFixed(2).replace('.',',')}%</td>
+            <td class="num \${d.perf!=null?((d.perf-d.coutL)>=0?'pos':'neg'):'muted'}">\${d.perf!=null?((d.perf-d.coutL>=0?'+':'')+((d.perf-d.coutL).toFixed(1).replace('.',','))+'%'):'—'}</td>
+          </tr>\`).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:10px;padding:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.6">
+        ℹ Perf. AV UBS corrigée des rachats estimés (${eur(rachats)}). Coût Lombard = Euribor 3M BCE + spread 0,50% estimé (à confirmer avec le contrat). Le scope UBS+FANTOM est calculé depuis l'ouverture de FANTOM (oct. 2021) par interpolation linéaire des snapshots UBS.
+      </div>
+    </div>`;
+}
+function initPerfChart(scope){
+  scope=scope||_perfScope;
+  const snaps=getSnapsConsolides(scope);
+  if(!snaps.length)return;
+  const labels=snaps.map(s=>fdm(s.date));
+  const base=snaps[0].val;
+  const t0=new Date(snaps[0].date).getTime();
+  // Pour ubs: val est en €, normalise en base 100. Pour ubs_fantom: val est déjà base 100.
+  const portfolioIdx=scope==='ubs_fantom'
+    ? snaps.map(s=>s.val)
+    : snaps.map(s=>(s.val/base)*100);
+  const lombCostIdx=snaps.map(s=>100*Math.pow(1+getEuribor(s.date)+SPREAD,(new Date(s.date).getTime()-t0)/(365.25*24*3600*1000)));
+  const euriborIdx=snaps.map(s=>100*Math.pow(1+Math.max(0,getEuribor(s.date)),(new Date(s.date).getTime()-t0)/(365.25*24*3600*1000)));
+  const scopeLabel={'ubs':'AV UBS (corrigée rachats)','ubs_fantom':'AV UBS + FANTOM'}[scope]||scope;
+  const scopeColor={'ubs':'#4A9EFF','ubs_fantom':'#9B7FFC'}[scope]||'#4A9EFF';
+  destroyChart('perf');
+  const ctx=document.getElementById('chart-perf');
+  if(!ctx)return;
+  _charts['perf']=new Chart(ctx.getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:scopeLabel,data:portfolioIdx,borderColor:scopeColor,borderWidth:2.5,backgroundColor:scopeColor+'15',fill:true,pointRadius:3,pointBackgroundColor:scopeColor,tension:0.4},
+      {label:'Coût Lombard (Euribor+0,75%)',data:lombCostIdx,borderColor:'#F06B6B',borderWidth:1.5,borderDash:[5,3],fill:false,pointRadius:0,tension:0.4},
+      {label:'Euribor 3M seul',data:euriborIdx,borderColor:'#F59340',borderWidth:1,borderDash:[2,4],fill:false,pointRadius:0,tension:0.4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,labels:{color:'#8891A8',font:{size:9},boxWidth:10}},
+        tooltip:{backgroundColor:'#1A1E2A',titleColor:'#8891A8',bodyColor:'#E8ECF4',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+          callbacks:{label:c=>c.dataset.label+': '+c.raw.toFixed(1)+' (base 100)'}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9},callback:v=>v.toFixed(0)},
+          title:{display:true,text:'Base 100',color:'#4F5870',font:{size:9}}}
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// PE PAGE
+// ═══════════════════════════════════════════════════════
+function renderPE(){
+  document.getElementById('pe-content').innerHTML=renderPEEnvSection();
+}
+
+// ═══════════════════════════════════════════════════════
+// MANDAT UBS — TWRR avec neutralisation du flux nov. 2022
+// ═══════════════════════════════════════════════════════
+function calcTWRRMandat(){
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(snaps.length<2) return null;
+
+  // Interpolation linéaire sur les snapshots mandat
+  function mandatValAt(dateStr){
+    var d=new Date(dateStr).getTime();
+    var before=null,after=null;
+    for(var i=0;i<snaps.length;i++){
+      var sd=new Date(snaps[i].date).getTime();
+      if(sd<=d) before=snaps[i]; else if(!after) after=snaps[i];
+    }
+    if(!before) return after?after.val:null;
+    if(!after) return before.val;
+    var t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+    return before.val+(after.val-before.val)*t;
+  }
+
+  var first=snaps[0],last=snaps[snaps.length-1];
+  var totalAns=(new Date(last.date)-new Date(first.date))/(365.25*24*3600*1000);
+  if(totalAns<0.5) return null;
+
+  // Jalons : ouverture + dates de flux entrants confirmés + clôture
+  var milestones=[{date:first.date,flux:0}];
+  (M.flux||[]).forEach(function(f){
+    if(new Date(f.date)>new Date(first.date)&&new Date(f.date)<new Date(last.date)){
+      milestones.push({date:f.date,flux:f.montant});
+    }
+  });
+  milestones.push({date:last.date,flux:0});
+  milestones.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+
+  // Produit TWRR sur sous-périodes
+  var twrrProduct=1;
+  for(var i=0;i<milestones.length-1;i++){
+    var valStart=mandatValAt(milestones[i].date);
+    // Valeur de fin de sous-période = valeur observée - flux entrant de cette date
+    // (le flux entrant gonfle la valeur de début de la PROCHAINE sous-période)
+    var valEnd=mandatValAt(milestones[i+1].date);
+    var fluxEntrant=milestones[i+1].flux||0;
+    // TWRR: on neutralise le flux entrant en le soustrayant du numérateur
+    // valEnd avant flux = valEnd - fluxEntrant (valeur générée par la gestion seule)
+    var valEndSansFlux=valEnd-fluxEntrant;
+    if(valStart&&valStart>0) twrrProduct*=valEndSansFlux/valStart;
+  }
+
+  return {
+    twrr: Math.pow(twrrProduct,1/totalAns)-1,
+    twrrTotal: twrrProduct-1,
+    pru: first.val,
+    valFinale: last.val,
+    dateDebut: first.date,
+    dateFin: last.date,
+    ans: totalAns
+  };
+}
+
+function calcFraisMandat(){
+  // Frais mandat estimés = 0,50%/an × valeur moyenne du mandat
+  // Frais AEP = 0,50%/an × valeur enveloppe globale (non isolable)
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(snaps.length<2) return null;
+  var first=snaps[0],last=snaps[snaps.length-1];
+  var totalAns=(new Date(last.date)-new Date(first.date))/(365.25*24*3600*1000);
+  // Valeur moyenne approchée (moyenne arithmétique des snapshots)
+  var moyMandat=snaps.reduce(function(a,s){return a+s.val;},0)/snaps.length;
+  return {
+    fraisMandat_par_an: moyMandat*M.frais_mandat_pct,
+    fraisMandat_total: moyMandat*M.frais_mandat_pct*totalAns,
+    fraisMandatPct: M.frais_mandat_pct,
+    fraisAEPPct: M.frais_aep_pct,
+    fraisTotalPct: M.frais_total_pct,
+    moyMandat: moyMandat,
+    ans: totalAns
+  };
+}
+
+// Interpolation sur MSCI World Acc (base 100 = 13/09/2021)
+function msciAccAt(dateStr){
+  var arr=D.msci_world_acc.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var d=new Date(dateStr).getTime();
+  var before=null,after=null;
+  for(var i=0;i<arr.length;i++){
+    var sd=new Date(arr[i].date).getTime();
+    if(sd<=d) before=arr[i]; else if(!after) after=arr[i];
+  }
+  if(!before) return after?after.val:null;
+  if(!after) return before.val;
+  var t=(d-new Date(before.date).getTime())/(new Date(after.date).getTime()-new Date(before.date).getTime());
+  return before.val+(after.val-before.val)*t;
+}
+
+function msciAccTWRR(dateDebut,dateFin){
+  var v0=msciAccAt(dateDebut),v1=msciAccAt(dateFin);
+  if(!v0||!v1) return null;
+  var ans=(new Date(dateFin)-new Date(dateDebut))/(365.25*24*3600*1000);
+  return Math.pow(v1/v0,1/ans)-1;
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDEMENT PAGE
+// ═══════════════════════════════════════════════════════
+function renderRendement(){
+  const euriborActuel=getEuribor('2026-02-16');
+  const coutActuel=(euriborActuel+SPREAD)*100;
+  const rB=rendAnnualise('ubs'),rN=rendNetLombard('ubs');
+  const rachats=D.enveloppes.find(e=>e.id==='av_ubs').rachats_documentes||0;
+  const snapsUBS=getSnapsConsolides('ubs');
+
+  const periods=[
+    {y:'2021\u21922022',s1:'2021-12-31',s2:'2022-12-31'},
+    {y:'2022\u21922023',s1:'2022-12-31',s2:'2023-09-30'},
+    {y:'2023\u21922024',s1:'2023-09-30',s2:'2024-11-29'},
+    {y:'2024\u21922025',s1:'2024-11-29',s2:'2025-06-30'}
+  ];
+
+  // Build table rows without any template literals
+  var rows='';
+  periods.forEach(function(row){
+    var s1=snapsUBS.find(function(s){return s.date===row.s1;});
+    var s2=snapsUBS.find(function(s){return s.date===row.s2;});
+    var euribor=getEuribor(row.s2);
+    var coutL=(euribor+SPREAD)*100;
+    var perf=s1&&s2?((s2.val-s1.val)/s1.val)*100:null;
+    var diff=perf!=null?perf-coutL:null;
+    var ps=perf!=null?(perf>=0?'+':'')+perf.toFixed(1).replace('.',',')+'%':'—';
+    var pc=perf!=null?(perf>=0?'pos':'neg'):'muted';
+    var ds=diff!=null?(diff>=0?'+':'')+diff.toFixed(1).replace('.',',')+'%':'—';
+    var dc=diff!=null?(diff>=0?'pos':'neg'):'muted';
+    rows+='<tr><td class="bold">'+row.y+'</td>'
+         +'<td class="num '+pc+'">'+ps+'</td>'
+         +'<td class="num muted">'+euribor.toFixed(2).replace('.',',')+'%</td>'
+         +'<td class="num" style="color:var(--red)">'+coutL.toFixed(2).replace('.',',')+'%</td>'
+         +'<td class="num '+dc+'">'+ds+'</td></tr>';
+  });
+
+  var rBcol=rB>0.03?'var(--green)':'var(--orange)';
+  var rNcol=rN>0?'var(--green)':'var(--red)';
+  var rBstr=rB?(rB*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—';
+  var rNstr=rN!=null?(rN*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—';
+
+  var el=document.getElementById('rendement-content');
+  el.innerHTML=
+    // ── Bloc 1 : AV UBS vs Lombard ──
+    '<div class="card" style="margin-bottom:15px">'
+    +'<div class="card-title">Rendement annualisé vs coût Lombard'
+    +'<div style="display:flex;gap:5px">'
+    +'<button class="chart-sel-btn perf-scope-btn active" id="pb-ubs" style="font-size:.7rem;padding:3px 9px">AV UBS seule</button>'
+    +'<button class="chart-sel-btn perf-scope-btn" id="pb-ubs-f" style="font-size:.7rem;padding:3px 9px">UBS + FANTOM</button>'
+    +'</div></div>'
+    +'<div id="perf-scope-note" style="font-size:.71rem;color:var(--txt3);margin-bottom:12px;font-family:\'DM Mono\',monospace">Historique complet depuis sept. 2021 — le plus fiable.</div>'
+    +'<div class="tri-box" style="margin-bottom:16px">'
+    +'<div class="tri-item"><label>Rendement brut annualisé</label>'
+    +'<div class="val" id="perf-rbrut" style="color:'+rBcol+'">'+rBstr+'</div>'
+    +'<small id="perf-rbrut-note" style="font-size:.63rem;color:var(--txt3)">AV UBS seule (corrigée rachats)</small></div>'
+    +'<div class="tri-item"><label>Coût Lombard actuel</label>'
+    +'<div class="val" style="color:var(--red)">'+coutActuel.toFixed(2).replace('.',',')+'&nbsp;%/an</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">Euribor '+(euriborActuel*100).toFixed(2)+'% + spread 0,50%</small></div>'
+    +'<div class="tri-item"><label>Rendement net Lombard</label>'
+    +'<div class="val" id="perf-rnet" style="color:'+rNcol+'">'+rNstr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">Différentiel rendement &minus; coût</small></div>'
+    +'</div>'
+    +'<div style="position:relative;height:220px;margin-bottom:14px"><canvas id="chart-perf"></canvas></div>'
+    +'<div class="sec-title" style="font-size:.82rem;margin-bottom:8px">Détail par période — AV UBS</div>'
+    +'<table class="tbl"><thead><tr>'
+    +'<th>Période</th><th class="num">Perf. AV UBS</th><th class="num">Euribor 3M</th>'
+    +'<th class="num">Coût Lombard</th><th class="num">Différentiel</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div style="margin-top:10px;padding:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.6">'
+    +'ℹ Rendement AV UBS corrigé des rachats ('+eur(rachats)+'). Coût Lombard = Euribor 3M + spread 0,50% estimé. Composite UBS+FANTOM : TWRR correct par jalons, pondération géométrique.'
+    +'</div></div>'
+    // ── Bloc 2 : Mandat UBS ──
+    +renderMandatSection();
+
+  // Attach click handlers after DOM insertion
+  document.getElementById('pb-ubs').onclick=function(){setPerfScope('ubs');};
+  document.getElementById('pb-ubs-f').onclick=function(){setPerfScope('ubs_fantom');};
+
+  // Mandat chart (after DOM insertion)
+  setTimeout(function(){ initMandatChart(); }, 80);
+}
+
+function renderMandatSection(){
+  var tw=calcTWRRMandat();
+  var frais=calcFraisMandat();
+  var msciAnn=tw?msciAccTWRR(tw.dateDebut,tw.dateFin):null;
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+
+  var twrrStr=tw?(tw.twrr*100).toFixed(2).replace('.',',')+'&nbsp;%/an':'—';
+  var twrrCol=tw?(tw.twrr>0.04?'var(--green)':tw.twrr>0.02?'var(--orange)':'var(--red)'):'var(--txt2)';
+  var msciStr=msciAnn?(msciAnn*100).toFixed(2).replace('.',',')+'&nbsp;%/an':'—';
+  var msciCol=msciAnn?(msciAnn>0.04?'var(--green)':msciAnn>0?'var(--orange)':'var(--red)'):'var(--txt2)';
+  var alphaVal=tw&&msciAnn?tw.twrr-msciAnn:null;
+  var alphaStr=alphaVal!=null?(alphaVal>=0?'+':'')+(alphaVal*100).toFixed(2).replace('.',',')+'&nbsp;pp':'—';
+  var alphaCol=alphaVal!=null?(alphaVal>=0?'var(--green)':'var(--red)'):'var(--txt2)';
+
+  // Frais estimés mandat
+  var fraisAnnStr=frais?eur(Math.round(frais.fraisMandat_par_an)):'—';
+  var fraisTotStr=frais?eur(Math.round(frais.fraisMandat_total)):'—';
+
+  // PnL brut
+  var pnlBrut=tw?tw.valFinale-tw.pru:null;
+  var pnlFlux=M.flux.reduce(function(a,f){return a+f.montant;},0);
+  var pnlNet=pnlBrut!=null?tw.valFinale-(tw.pru+pnlFlux):null;
+  var pnlBrutStr=pnlBrut!=null?(pnlBrut>=0?'+':'')+eur(Math.round(pnlBrut)):' —';
+  var pnlNetStr=pnlNet!=null?(pnlNet>=0?'+':'')+eur(Math.round(pnlNet)):' —';
+
+  // Table des snapshots
+  var snapRows='';
+  snaps.forEach(function(s,i){
+    if(i===0) return; // skip premier
+    var prev=snaps[i-1];
+    var delta=s.val-prev.val;
+    var fluxPeriode=M.flux.filter(function(f){return new Date(f.date)>new Date(prev.date)&&new Date(f.date)<=new Date(s.date);}).reduce(function(a,f){return a+f.montant;},0);
+    var perfNette=delta-fluxPeriode;
+    var sign=perfNette>=0?'+':'';
+    var cl=perfNette>=0?'pos':'neg';
+    snapRows+='<tr>'
+      +'<td class="muted">'+fd(prev.date)+' → '+fd(s.date)+'</td>'
+      +'<td class="num bold">'+eur(s.val)+'</td>'
+      +(fluxPeriode?'<td class="num" style="color:var(--cyan)">+'+eur(fluxPeriode)+'</td>':'<td class="num muted">—</td>')
+      +'<td class="num '+cl+'">'+sign+eur(Math.round(perfNette))+'</td>'
+      +'<td class="muted" style="font-size:.68rem">'+s.src+'</td>'
+      +'</tr>';
+  });
+
+  // Warning flux non confirmé
+  var fluxWarn='';
+  var fluxNonConf=M.flux.filter(function(f){return !f.confirme;});
+  if(fluxNonConf.length){
+    fluxWarn='<div class="alert-warn" style="font-size:.72rem;margin-top:8px">'
+      +'⚠ Flux non confirmé : transfert de '+eur(fluxNonConf[0].montant)+' ('+fd(fluxNonConf[0].date)+') — '+fluxNonConf[0].note+'<br>'
+      +'Date et valeur pré-transfert à confirmer avec l\'AEP Q3 2022. Impact sur TWRR : '
+      +'neutralisé dans le calcul, mais la valeur interpolée au '+fd(fluxNonConf[0].date)+' est une estimation.'
+      +'</div>';
+  }
+
+  return '<div class="card" style="margin-top:15px">'
+    // En-tête
+    +'<div class="card-title" style="margin-bottom:4px">'
+    +'<span>⊕ Mandat UBS — Performance isolée</span>'
+    +'<span style="font-size:.71rem;font-weight:400;color:var(--txt3)">TWRR · sept. 2021 → avr. 2026</span>'
+    +'</div>'
+    +'<div style="font-size:.71rem;color:var(--txt3);margin-bottom:14px;font-family:\'DM Mono\',monospace">'
+    +'Gestion active 55 lignes — frais 1,00%/an (0,50% mandat + 0,50% AEP) — pas de flux externe depuis ouverture sauf arbitrage nov. 2022'
+    +'</div>'
+
+    // KPIs
+    +'<div class="tri-box" style="margin-bottom:16px;grid-template-columns:repeat(4,1fr)">'
+    +'<div class="tri-item"><label>TWRR annualisé</label>'
+    +'<div class="val" style="color:'+twrrCol+'">'+twrrStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">net frais mandat, brut frais AEP</small></div>'
+    +'<div class="tri-item"><label>MSCI World Acc (€)</label>'
+    +'<div class="val" style="color:'+msciCol+'">'+msciStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">même période · NTR non hedgé</small></div>'
+    +'<div class="tri-item"><label>Alpha vs MSCI</label>'
+    +'<div class="val" style="color:'+alphaCol+'">'+alphaStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">positif = surperformance mandat</small></div>'
+    +'<div class="tri-item"><label>P&L net de flux</label>'
+    +'<div class="val" style="color:'+(pnlNet>=0?'var(--green)':'var(--red)')+'">'+pnlNetStr+'</div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">sur '+(tw?tw.pru:0+pnlFlux|0)+' € investis</small></div>'
+    +'</div>'
+
+    // Graphique
+    +'<div style="position:relative;height:230px;margin-bottom:16px"><canvas id="chart-mandat"></canvas></div>'
+    +fluxWarn
+
+    // Frais estimés
+    +'<div class="sec-title" style="font-size:.82rem;margin:14px 0 8px">Frais mandat estimés</div>'
+    +'<div class="grid-2" style="gap:10px;margin-bottom:12px">'
+    +'<div style="background:var(--bg3);border-radius:8px;padding:12px">'
+    +'<div style="font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Frais mandat UBS (0,50%/an)</div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:1.05rem;font-weight:700;color:var(--orange)">'+fraisAnnStr+'/an</div>'
+    +'<div style="font-size:.7rem;color:var(--txt3);margin-top:3px">Total estimé période : '+fraisTotStr+'</div>'
+    +'<div style="font-size:.68rem;color:var(--txt3);margin-top:2px">Déjà inclus dans les valorisations AEP (prélevés en continu)</div>'
+    +'</div>'
+    +'<div style="background:var(--bg3);border-radius:8px;padding:12px">'
+    +'<div style="font-size:.63rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Frais AEP Cardif (0,50%/an enveloppe)</div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:1.05rem;font-weight:700;color:var(--orange)">Non isolables</div>'
+    +'<div style="font-size:.7rem;color:var(--txt3);margin-top:3px">Prélevés sur AV UBS globale (~'+(frais?eur(Math.round(valEnv('av_ubs')*0.005)):' —')+'/an)</div>'
+    +'<div style="font-size:.68rem;color:var(--txt3);margin-top:2px">Impact performance mandat : ~-0,50%/an supplémentaire</div>'
+    +'</div>'
+    +'</div>'
+
+    // Table snapshots
+    +'<div class="sec-title" style="font-size:.82rem;margin-bottom:8px">Valorisations trimestrielles</div>'
+    +'<table class="tbl"><thead><tr>'
+    +'<th>Période</th><th class="num">Valeur fin</th><th class="num">Flux entrant</th>'
+    +'<th class="num">Perf. nette flux</th><th>Source</th>'
+    +'</tr></thead><tbody>'+snapRows+'</tbody></table>'
+
+    // Note méthodologique
+    +'<div style="margin-top:12px;padding:8px 10px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.7">'
+    +'<strong style="color:var(--txt2)">Méthodologie TWRR</strong> — '
+    +M.note_twrr+'<br>'
+    +'<strong style="color:var(--txt2)">Frais</strong> — '+M.note_frais+'<br>'
+    +'<strong style="color:var(--txt2)">MSCI World Acc</strong> — Valeurs reconstituées NTR EUR non hedgé (base 100 = 13/09/2021). À affiner avec cours exacts iShares MSCI World (IE00B4L5Y983) sur Morningstar/justETF. '
+    +'<strong style="color:var(--orange)">⚠ L\'alpha vs MSCI est à relativiser</strong> : le mandat UBS est une gestion diversifiée multi-actifs (actions + obligations + structurés) avec un beta &lt; 1 — le MSCI World 100% actions n\'est pas le benchmark naturel. '
+    +'Un 50/50 MSCI World / Bloomberg Aggregate EUR serait plus pertinent. La sous-performance est réelle mais partiellement expliquée par l\'allocation défensive.'
+    +'</div>'
+    +'</div>';
+}
+
+function initMandatChart(){
+  var M=D.mandat;
+  var snaps=M.snapshots.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(!snaps.length) return;
+
+  var labels=snaps.map(function(s){return fdm(s.date);});
+  var mandatData=snaps.map(function(s){return (s.val/snaps[0].val*100).toFixed(2)*1;});
+
+  // MSCI World Acc base 100 aux mêmes dates
+  var msciData=snaps.map(function(s){return msciAccAt(s.date);});
+
+  // Coût cumulé Lombard (depuis date ouverture mandat) base 100
+  var t0=new Date(snaps[0].date).getTime();
+  var lombData=snaps.map(function(s){
+    var ans=(new Date(s.date).getTime()-t0)/(365.25*24*3600*1000);
+    var euribor=getEuribor(s.date);
+    return 100*Math.pow(1+euribor+SPREAD,ans);
+  });
+
+  // Frais mandat cumulés : base 100 - (1%/an en continu)
+  var fraisData=snaps.map(function(s){
+    var ans=(new Date(s.date).getTime()-t0)/(365.25*24*3600*1000);
+    return 100*Math.pow(1-D.mandat.frais_total_pct,ans);
+  });
+
+  destroyChart('mandat');
+  var ctx=document.getElementById('chart-mandat');
+  if(!ctx) return;
+  _charts['mandat']=new Chart(ctx.getContext('2d'),{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {label:'Mandat UBS (base 100)',data:mandatData,borderColor:'#C9A84C',borderWidth:2.5,backgroundColor:'rgba(201,168,76,0.12)',fill:true,pointRadius:4,pointBackgroundColor:'#C9A84C',tension:0.3},
+      {label:'MSCI World Acc €',data:msciData,borderColor:'#F472B6',borderWidth:1.8,borderDash:[5,3],fill:false,pointRadius:3,pointBackgroundColor:'#F472B6',tension:0.3},
+      {label:'Coût Lombard (Euribor+0,50%)',data:lombData,borderColor:'#F06B6B',borderWidth:1.2,borderDash:[3,4],fill:false,pointRadius:0,tension:0.3},
+      {label:'Traînée frais (1,00%/an)',data:fraisData,borderColor:'#F59340',borderWidth:1,borderDash:[2,5],fill:false,pointRadius:0,tension:0.3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,labels:{color:'#8891A8',font:{size:9},boxWidth:10}},
+        tooltip:{backgroundColor:'#1A1E2A',titleColor:'#8891A8',bodyColor:'#E8ECF4',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+          callbacks:{label:function(c){return c.dataset.label+' : '+c.raw.toFixed(1)+' (base 100)';}}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4F5870',font:{size:9},callback:function(v){return v.toFixed(0);}},
+          title:{display:true,text:'Base 100 (sept. 2021)',color:'#4F5870',font:{size:9}}}
+      }
+    }
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════
+// FRAIS
+// ═══════════════════════════════════════════════════════
+function renderFrais(){
+  const total=D.frais.reduce((a,f)=>a+f.total,0);
+  const max=Math.max(...D.frais.map(f=>f.total));
+  document.getElementById('frais-content').innerHTML=`
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">AV UBS — Frais annuels</div>
+        <div style="display:flex;gap:14px;margin-bottom:14px">
+          <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Total 2021–2024</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:1.05rem;color:var(--orange)">${eur(total)}</div></div>
+          <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Moyenne annuelle</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:1.05rem">${eur(total/D.frais.length)}</div></div>
+        </div>
+        ${D.frais.map(f=>`
+          <div class="frais-row">
+            <div style="font-family:Syne,sans-serif;font-weight:600;min-width:42px">${f.annee}</div>
+            <div style="flex:1"><div class="prog-bar" style="margin:0"><div class="prog-fill" style="width:${(f.total/max*100).toFixed(1)}%;background:var(--orange)"></div></div></div>
+            <div style="font-family:DM Mono,monospace;font-size:.77rem;min-width:70px;text-align:right">${eur(f.total)}</div>
+            <div style="font-size:.63rem;color:${f.src==='documenté'?'var(--green)':'var(--txt3)'};min-width:80px;text-align:right">${f.src==='documenté'?'✓':'~'} ${f.src}</div>
+          </div>`).join('')}
+        <div style="margin-top:10px;padding:7px 10px;background:rgba(245,147,64,.07);border:1px solid rgba(245,147,64,.15);border-radius:5px;font-size:.71rem;color:var(--txt3)">
+          ⚠ Frais 2022–2024 reconstitués à ~0,50% encours — Relevés AEP manquants
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Détail par poste</div>
+        <table class="tbl">
+          <thead><tr><th>Année</th><th class="num">Gestion/Adm.</th><th class="num">Mandat</th><th class="num">Prél. soc.</th><th class="num">Total</th></tr></thead>
+          <tbody>${D.frais.map(f=>`<tr><td class="bold">${f.annee}</td><td class="num">${eur(f.adm)}</td><td class="num">${eur(f.mandat)}</td><td class="num">${f.ps?eur(f.ps):'<span class="muted">—</span>'}</td><td class="num bold" style="color:var(--orange)">${eur(f.total)}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// STRATÉGIE
+// ═══════════════════════════════════════════════════════
+function renderStrategie(){
+  const pt_=ptotal(), ltvV=ltv(), solde=soldeLombard();
+  const stEc=D.structures.filter(function(s){return s.statut==='EN COURS';});
+  const stVal=stEc.reduce(function(a,s){return a+(s.val||0);},0);
+  const stInvEcAuto=stEc.filter(function(s){return s.type==='autocall';}).reduce(function(a,s){return a+(s.investi||0);},0);
+  const stInvEcTaux=stEc.filter(function(s){return s.type==='taux';}).reduce(function(a,s){return a+(s.investi||0);},0);
+
+  // ── Calcul allocation ACTUELLE (dynamique sur valeurs réelles)
+  const mandatUBS = 582292; // à affiner avec reporting UBS
+  const etfLiquide = valEnv('pea_fortuneo') + valEnv('av_finary') + mandatUBS;
+  const fondsEuros = 18776 + 12950 + 10058; // FANTOM fonds euros + AV UBS fonds euros + BNP fonds euros
+  const stTaux = 113992+100400+96186+63104+60487; // structurés taux EN COURS
+  const stAuto = stVal - stTaux; // structurés autocall EN COURS (approximation)
+  const pe = D.pe.valorisations[0] ? D.pe.valorisations[0].actif_net : 109950;
+
+  // ── Blocs cibles (€ et %)
+  const BLOCS = [
+    {
+      id:'collateral',
+      label:'Bloc 1 — Collatéral stable',
+      desc:'Fonds euros & monétaire — sécurise la LTV Lombard',
+      couleur:'#22C8E0',
+      actuel: fondsEuros,
+      cible_pct: 0.15,
+      cible_min_pct: 0.12, cible_max_pct: 0.18,
+      detail_actuel: 'Fonds euros AV UBS ~13k + FANTOM ~19k + AV BNP ~10k',
+      detail_cible: 'Objectif ~275k€ — alimenter après chaque remboursement autocall avant réinvestissement',
+      statut: fondsEuros/pt_ < 0.10 ? 'danger' : fondsEuros/pt_ < 0.12 ? 'warn' : 'ok'
+    },
+    {
+      id:'etf',
+      label:'Bloc 2 — Croissance ETF',
+      desc:'ETF indiciels larges — moteur de performance long terme, dans les enveloppes nanties',
+      couleur:'#4A9EFF',
+      actuel: etfLiquide,
+      cible_pct: 0.40,
+      cible_min_pct: 0.35, cible_max_pct: 0.45,
+      detail_actuel: 'Mandat UBS ~582k (opaque) + PEA ~24k + Finary ~3k — mandat à migrer progressivement vers ETF',
+      detail_cible: 'MSCI World 60% + Europe Stoxx600 25% + Émergents 15% — DANS l\'AV UBS pour rester nantissable',
+      statut: etfLiquide/pt_ < 0.25 ? 'warn' : 'ok'
+    },
+    {
+      id:'structures',
+      label:'Bloc 3 — Structurés',
+      desc:'Taux + autocall — rendement régulier avec protection partielle',
+      couleur:'#9B7FFC',
+      actuel: stVal,
+      cible_pct: 0.25,
+      cible_min_pct: 0.20, cible_max_pct: 0.30,
+      detail_actuel: 'Taux ~'+(stTaux/1000).toFixed(0)+'k + Autocall ~'+(stAuto/1000).toFixed(0)+'k — surpondéré et trop sectoriel Oil&Gas',
+      detail_cible: 'Plafonner à 25% — privilégier indices larges (Eurostoxx/S&P) plutôt que sectoriels. Ne pas renouveler Oil&Gas.',
+      statut: stVal/pt_ > 0.40 ? 'warn' : 'ok'
+    },
+    {
+      id:'illiquide',
+      label:'Bloc 4 — Illiquide',
+      desc:'Private Equity — surperformance long terme',
+      couleur:'#F59340',
+      actuel: pe,
+      cible_pct: 0.08,
+      cible_min_pct: 0.05, cible_max_pct: 0.10,
+      detail_actuel: 'Global Strategies 2021 — dernier NAV juin 2023. Distribution reçue mars 2025.',
+      detail_cible: 'Laisser courir jusqu\'à maturité. Pas de nouvel engagement PE avant liquidation du Lombard.',
+      statut: 'ok'
+    }
+  ];
+
+  const totalBrut = pt_;
+  const CIBLE_TOTAL = totalBrut; // base de calcul identique
+
+  // ── ScoreCards dynamiques
+  const scoreCards=[
+    {titre:'LTV Lombard',val:pct(ltvV),col:ltvV>=0.65?'danger':ltvV>=0.55?'warn':'ok',
+      msg:'LTV '+pct(ltvV)+' — buffer '+eur(ltvCollatéral()*0.65-soldeLombard())+' avant seuil alerte 65%. Coût Lombard ~2,95%/an (Euribor 2,45% + spread 0,50%). Rendement composite 2,68%/an → différentiel légèrement négatif sur période complète, positif depuis fin 2024.'},
+    {titre:'Concentration Oil & Gas',val:'3 structurés actifs',col:'warn',
+      msg:"Alizé x2 + Atlas Oil&Gas — même secteur sur trois produits. Ne pas renouveler au remboursement. Prochain autocall potentiel Alizé O2 Oil&Gas dès oct. 2026."},
+    {titre:'Mandat UBS — boîte noire',val:eur(mandatUBS),col:'warn',
+      msg:''+eur(mandatUBS)+' (~19% du patrimoine brut) sans reporting de performance isolée. Demander composition + benchmark + frais (droit MIF II). Si sous-performance confirmée → migration partielle vers ETF dans l\'AV UBS.'},
+    {titre:'Bloc collatéral',val:pct(fondsEuros/pt_),col:fondsEuros/pt_<0.10?'danger':'warn',
+      msg:'Fonds euros cumulés ~'+eur(fondsEuros)+' ('+pct(fondsEuros/pt_)+' du brut). Cible 15% = '+eur(pt_*0.15)+'. Sous-dimensionné — alimenter en priorité dès les prochains remboursements autocall.'},
+    {titre:'Diversification enveloppes',val:'6 enveloppes',col:'ok',
+      msg:'Bonne répartition AV/PEA/PE. AV FANTOM démembrée (NP Tom) optimise la transmission. AV BNP libre (hors Lombard) = laboratoire pour tester de nouvelles allocations.'},
+    {titre:'Structurés taux duration',val:'2027–2034',col:'info',
+      msg:'LMDG 2027 (+14k latent) → réallouer vers ETF en janv. 2027. Atlas CMS 2034 capital garanti → laisser courir (coupon 7% conditionnel août 2026 probable).'}
+  ];
+
+  const colMap={ok:'alert-ok',warn:'alert-warn',danger:'alert-danger',info:'alert-info'};
+
+  // ── Build scoreCards HTML
+  var scHTML='';
+  scoreCards.forEach(function(s){
+    scHTML+='<div class="alert-card '+colMap[s.col]+'">'
+      +'<div style="font-weight:600;margin-bottom:4px">'+s.titre+' — '+s.val+'</div>'
+      +'<div style="font-size:.79rem;opacity:.85">'+s.msg+'</div>'
+      +'</div>';
+  });
+
+  // ── Build allocation visuelle — stacked bar + 4 cartes
+  // Stacked bar chart (actuel)
+  var totalCheck = BLOCS.reduce(function(a,b){return a+b.actuel;},0);
+  var stackedBar = '<div style="margin-bottom:16px">'
+    +'<div style="font-size:.7rem;color:var(--txt3);margin-bottom:6px">Répartition actuelle — patrimoine brut '+eur(totalBrut)+'</div>'
+    +'<div style="display:flex;height:28px;border-radius:8px;overflow:hidden;gap:1px">';
+  BLOCS.forEach(function(b){
+    var pct_=Math.round(b.actuel/totalBrut*100);
+    stackedBar+='<div title="'+b.label+' — '+pct_+'%" style="flex:'+(b.actuel/totalBrut*100).toFixed(2)+';background:'+b.couleur+';display:flex;align-items:center;justify-content:center">'
+      +(pct_>8?'<span style="font-size:.62rem;font-weight:700;color:#fff">'+pct_+'%</span>':'')
+      +'</div>';
+  });
+  stackedBar+='</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">';
+  BLOCS.forEach(function(b){
+    stackedBar+='<span style="display:flex;align-items:center;gap:4px;font-size:.68rem;color:var(--txt2)">'
+      +'<span style="width:10px;height:10px;border-radius:2px;background:'+b.couleur+'"></span>'
+      +b.label.replace(/Bloc \d — /,'')
+      +'</span>';
+  });
+  stackedBar+='</div></div>';
+
+  // 4 bloc cards — 2 colonnes
+  var allocHTML=stackedBar+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  BLOCS.forEach(function(b){
+    var actPct=b.actuel/totalBrut;
+    var inRange=actPct>=b.cible_min_pct&&actPct<=b.cible_max_pct;
+    var gap=actPct-b.cible_pct;
+    var gapLabel=(gap>=0?'+':'')+Math.round(gap*100)+'pt';
+    var statusCol=b.statut==='ok'?'var(--green)':b.statut==='warn'?'var(--orange)':'var(--red)';
+    var arrowUp=gap>0.03, arrowDown=gap<-0.03;
+
+    allocHTML+='<div style="background:var(--bg2);border-radius:10px;padding:14px;border-top:3px solid '+b.couleur+'">'
+      // Titre + montant
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      +'<div style="font-family:Syne,sans-serif;font-weight:700;font-size:.82rem;color:'+b.couleur+'">'+b.label+'</div>'
+      +'<span style="font-size:.68rem;background:'+(inRange?'rgba(46,204,138,.15)':'rgba(245,147,64,.15)')+';color:'+(inRange?'var(--green)':statusCol)+';padding:2px 7px;border-radius:10px;font-weight:600">'
+      +(arrowUp?'▲ ':arrowDown?'▼ ':'')+gapLabel
+      +'</span>'
+      +'</div>'
+      +'<div style="font-size:.72rem;color:var(--txt3);margin-bottom:10px">'+b.desc+'</div>'
+      // Actuel vs cible — two KPIs
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">'
+      +'<div style="background:var(--bg1);border-radius:7px;padding:8px;text-align:center">'
+      +'<div style="font-size:.6rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">Actuel</div>'
+      +'<div style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:700;color:'+b.couleur+'">'+Math.round(actPct*100)+'%</div>'
+      +'<div style="font-size:.67rem;color:var(--txt3)">'+eur(b.actuel)+'</div>'
+      +'</div>'
+      +'<div style="background:var(--bg1);border-radius:7px;padding:8px;text-align:center">'
+      +'<div style="font-size:.6rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em">Cible</div>'
+      +'<div style="font-family:Syne,sans-serif;font-size:1.15rem;font-weight:700;color:var(--txt2)">'+Math.round(b.cible_min_pct*100)+'–'+Math.round(b.cible_max_pct*100)+'%</div>'
+      +'<div style="font-size:.67rem;color:var(--txt3)">'+eur(totalBrut*b.cible_pct)+'</div>'
+      +'</div>'
+      +'</div>'
+      // Single progress bar
+      +'<div style="background:var(--bg3);border-radius:4px;height:6px;margin-bottom:10px;position:relative;overflow:visible">'
+      +'<div style="position:absolute;height:100%;width:'+Math.min(actPct/0.60*100,100).toFixed(1)+'%;background:'+b.couleur+';border-radius:4px;transition:.4s"></div>'
+      +'<div style="position:absolute;height:130%;top:-15%;left:'+Math.min(b.cible_min_pct/0.60*100,100).toFixed(1)+'%;width:'+(Math.min(b.cible_max_pct/0.60*100,100)-Math.min(b.cible_min_pct/0.60*100,100)).toFixed(1)+'%;border:2px solid '+b.couleur+';border-radius:3px;opacity:.7"></div>'
+      +'</div>'
+      // Action à faire
+      +'<div style="font-size:.72rem;color:var(--txt2);line-height:1.5;border-top:1px solid var(--border);padding-top:8px">'+b.detail_cible+'</div>'
+      +'</div>';
+  });
+  allocHTML+='</div>';
+
+  // ── Roadmap migration
+  var roadmapHTML=''
+    +'<div style="display:grid;gap:8px">'
+    // Étape 1
+    +'<div style="display:flex;gap:12px;align-items:flex-start">'
+    +'<div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff">1</div>'
+    +'<div style="flex:1;background:var(--bg2);border-radius:8px;padding:10px 12px">'
+    +'<div style="font-weight:600;font-size:.83rem;margin-bottom:4px">Court terme — 0 à 12 mois</div>'
+    +'<div style="font-size:.76rem;color:var(--txt3);line-height:1.6">'
+    +'→ Remboursements autocalls (Alizé O2 Oil&Gas oct. 2026, Alizé O2 Santé) : flécher vers ETF MSCI World dans l\'AV UBS<br>'
+    +'→ Demander reporting mandat UBS (MIF II) : composition + performance vs benchmark + frais<br>'
+    +'→ Alimenter bloc collatéral (objectif +50k€ en fonds euros)'
+    +'</div></div></div>'
+    // Étape 2
+    +'<div style="display:flex;gap:12px;align-items:flex-start">'
+    +'<div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff">2</div>'
+    +'<div style="flex:1;background:var(--bg2);border-radius:8px;padding:10px 12px">'
+    +'<div style="font-weight:600;font-size:.83rem;margin-bottom:4px">Moyen terme — 1 à 3 ans</div>'
+    +'<div style="font-size:.76rem;color:var(--txt3);line-height:1.6">'
+    +'→ LMDG 2027 (~176k€ libérés sur UBS+FANTOM) : 60% ETF MSCI World / 40% nouveau structuré indice large<br>'
+    +'→ Mandat UBS : proposer migration partielle 380k→ETF, garder 200k en mandat (préserver relation UBS)<br>'
+    +'→ Pas de renouvellement Oil&Gas — prochains structurés sur Eurostoxx 50 ou S&P500'
+    +'</div></div></div>'
+    // Étape 3
+    +'<div style="display:flex;gap:12px;align-items:flex-start">'
+    +'<div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff">3</div>'
+    +'<div style="flex:1;background:var(--bg2);border-radius:8px;padding:10px 12px">'
+    +'<div style="font-weight:600;font-size:.83rem;margin-bottom:4px">Long terme — 3 à 5 ans (post sept. 2029)</div>'
+    +'<div style="font-size:.76rem;color:var(--txt3);line-height:1.6">'
+    +'→ AV UBS atteint 8 ans (sept. 2029) : rachats partiels plus flexibles fiscalement<br>'
+    +'→ Réduire Lombard progressivement à 400–500k en fléchant coupons + distributions PE<br>'
+    +'→ Réévaluer allocation PE : si Global Strategies distribue bien, envisager un second millésime'
+    +'</div></div></div>'
+    +'</div>';
+
+  // ── Règles à ne pas enfreindre
+  var reglesHTML=''
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+  var nonFaire=[
+    'Sortir les ETF vers PEA/CTO externe — perd la base nantissable Lombard',
+    'Liquider les structurés en cours avant terme — décote + perte coupons accumulés',
+    'Rembourser agressivement le Lombard au détriment de l\'investissement',
+    'Souscrire de nouveaux structurés Oil & Gas',
+    'Mettre de l\'or, du Bitcoin ou des ETF défense dans ce patrimoine',
+    'Réduire le mandat UBS à zéro d\'un coup — risque sur les conditions Lombard'
+  ];
+  nonFaire.forEach(function(r){
+    reglesHTML+='<div style="display:flex;gap:8px;align-items:flex-start;background:rgba(240,107,107,.06);border-radius:7px;padding:8px 10px">'
+      +'<span style="color:var(--red);flex-shrink:0;font-size:.9rem">✕</span>'
+      +'<span style="font-size:.74rem;color:var(--txt2);line-height:1.5">'+r+'</span>'
+      +'</div>';
+  });
+  reglesHTML+='</div>';
+
+  document.getElementById('strat-content').innerHTML=
+    // 1 — Allocation visuelle
+    '<div class="strat-zone">'
+    +'<div class="strat-zone-title">◎ Allocation actuelle vs cible — 4 blocs</div>'
+    +allocHTML
+    +'</div>'
+    // 2 — Roadmap
+    +'<div class="strat-zone">'
+    +'<div class="strat-zone-title">⊕ Feuille de route de migration</div>'
+    +roadmapHTML
+    +'</div>'
+    // 3 — Note
+    +'<div style="padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:.76rem;color:var(--txt3);line-height:1.7">'
+    +'<strong style="color:var(--txt2)">Note</strong> — '
+    +"Allocation dynamique sur valeurs actuelles. Mandat UBS (582k€) provisoirement dans Bloc Croissance — à reventiler dès réception du reporting. Cibles indicatives, profil 60 ans, horizon 20 ans, contrainte Lombard."
+    +'</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════
+function buildSidebar(){
+  document.getElementById('sb-envs').innerHTML=D.enveloppes.map(e=>
+    '<div class="sb-item sb-env-link" data-env-id="'+e.id+'">'
+    +'<span class="sb-sub-dot" style="background:'+e.couleur+'"></span>'
+    +'<span>'+e.court+'</span></div>'
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT JSON
+// ═══════════════════════════════════════════════════════
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='finlolo-export.json';a.click();
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+buildSidebar();
+renderDashboard();
+
+// Event delegation for all dynamic clicks
+document.addEventListener('click', function(ev){
+  // Calendar day click
+  var calCell = ev.target.closest('[data-cal-day]');
+  if(calCell){ selectCalDay(calCell.dataset.calDay); return; }
+  const card = ev.target.closest('.env-card[data-env-id]');
+  if(card){ nav('env-detail'); renderEnvDetail(card.dataset.envId); return; }
+  const sbLink = ev.target.closest('.sb-env-link[data-env-id]');
+  if(sbLink){ nav('env-detail'); renderEnvDetail(sbLink.dataset.envId); return; }
+  const backBtn = ev.target.closest('#back-to-envs');
+  if(backBtn){ nav('enveloppes'); }
+});
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR MOBILE TOGGLE
+// ═══════════════════════════════════════════════════════
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  const btn=document.getElementById('hamburger-btn');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('active',open);
+  btn.setAttribute('aria-expanded',open);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+}
+document.getElementById('sidebar').addEventListener('click',function(e){
+  if(e.target.closest('.sb-item')){
+    if(window.innerWidth<=900) closeSidebar();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// PWA — SERVICE WORKER
+// ═══════════════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {scope: './'})
+      .then(reg => console.log('[FinLOLO] SW enregistré, scope:', reg.scope))
+      .catch(err => console.warn('[FinLOLO] SW échec:', err));
+  });
+}
+</script>
+</body>
+</html>
