@@ -2992,147 +2992,160 @@ function _buildPDF(){
   var btn=document.getElementById('btn-pdf');
   try{
     var doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    var W=210,H=297,ML=18,MR=18,MT=18,pageW=W-ML-MR;
-    var y=MT,page=1;
+    var W=210,H=297,ML=15,MR=15,pageW=W-ML-MR;
+    var y=20,page=1;
 
-    // Palette
-    var GOLD=[201,168,76],DARK=[15,17,23],GREY=[80,88,105],LIGHT=[232,236,244];
-    var GREEN=[46,204,138],RED=[240,107,107],BLUE=[74,158,255];
+    // Palette fond blanc
+    var GOLD=[160,120,40],DARK=[30,30,30],GREY=[100,110,125],LGREY=[200,205,215];
+    var GREEN=[30,150,90],RED=[200,60,60],BLUE=[40,100,200],MID=[80,90,105];
 
-    function newPage(){
-      doc.addPage();page++;y=MT;
-      // Pied de page
-      doc.setFontSize(7);doc.setTextColor(120,130,150);
-      doc.text('FinLOLO — Confidentiel — '+new Date().toLocaleDateString('fr-FR'),ML,H-8);
-      doc.text('Page '+page,W-ML,H-8,{align:'right'});
+    function hline(yy,c){
+      doc.setDrawColor(c?c[0]:LGREY[0],c?c[1]:LGREY[1],c?c[2]:LGREY[2]);
+      doc.setLineWidth(0.25);doc.line(ML,yy,W-MR,yy);
     }
 
-    function checkY(needed){if(y+needed>H-18){newPage();}}
+    function newPage(){
+      doc.addPage();page++;y=20;
+      // En-tête
+      doc.setFontSize(7);doc.setFont('helvetica','normal');
+      doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+      doc.text('FinLOLO — Rapport Patrimonial — Laurent ROUSSEL — Confidentiel',ML,10);
+      doc.text('Page '+page,W-MR,10,{align:'right'});
+      hline(12,LGREY);
+    }
 
-    function sectionHeader(title,color){
+    function checkY(n){if(y+n>H-18)newPage();}
+
+    function secTitle(t){
       checkY(12);
-      doc.setFillColor(color[0],color[1],color[2]);
-      doc.rect(ML,y,pageW,7,'F');
       doc.setFontSize(9);doc.setFont('helvetica','bold');
-      doc.setTextColor(255,255,255);
-      doc.text(title.toUpperCase(),ML+3,y+5);
-      y+=10;doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+      doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
+      doc.text(t,ML,y);
+      hline(y+2,GOLD);
+      y+=7;doc.setTextColor(DARK[0],DARK[1],DARK[2]);
     }
 
     function kpiRow(items){
-      // items = [{label, value, color}]
-      checkY(14);
-      var colW=pageW/items.length;
-      items.forEach(function(item,i){
-        var x=ML+i*colW;
-        doc.setFillColor(25,30,42);
-        doc.rect(x,y,colW-2,12,'F');
-        doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-        doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-        doc.text(item.label,x+3,y+4.5);
+      checkY(16);
+      var cw=pageW/items.length,x=ML;
+      items.forEach(function(it){
+        doc.setDrawColor(LGREY[0],LGREY[1],LGREY[2]);doc.setLineWidth(0.3);
+        doc.rect(x,y,cw-2,13);
+        doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+        doc.text(it.label,x+2,y+4.5);
         doc.setFontSize(9.5);doc.setFont('helvetica','bold');
-        var c=item.color||LIGHT;
-        doc.setTextColor(c[0],c[1],c[2]);
-        doc.text(item.value,x+3,y+10);
+        var c=it.color||DARK;doc.setTextColor(c[0],c[1],c[2]);
+        doc.text(it.value,x+2,y+10.5);
+        x+=cw;
       });
-      y+=15;
+      y+=16;
     }
 
-    function tableHeader(cols){
-      // cols = [{text, width, align}]
+    function tHead(cols){
       checkY(7);
-      doc.setFillColor(25,30,42);
-      doc.rect(ML,y,pageW,6,'F');
-      doc.setFontSize(6.5);doc.setFont('helvetica','bold');
-      doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+      doc.setFillColor(240,242,246);doc.rect(ML,y,pageW,6,'F');
+      doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.setTextColor(MID[0],MID[1],MID[2]);
       var x=ML;
       cols.forEach(function(c){
-        doc.text(c.text.toUpperCase(),c.align==='right'?x+c.width-1:x+1,y+4.3,{align:c.align||'left'});
-        x+=c.width;
+        doc.text(c.t,c.r?x+c.w-1:x+1.5,y+4.3,{align:c.r?'right':'left'});
+        x+=c.w;
       });
       y+=6;
     }
 
-    function tableRow(cols,values,isAlt,bold){
+    function tRow(cols,vals,alt){
       checkY(6);
-      if(isAlt){doc.setFillColor(20,23,32);doc.rect(ML,y,pageW,5.5,'F');}
-      doc.setFontSize(7.5);doc.setFont('helvetica',bold?'bold':'normal');
+      if(alt){doc.setFillColor(248,249,252);doc.rect(ML,y,pageW,5.5,'F');}
+      doc.setFontSize(7.5);doc.setFont('helvetica','normal');
       var x=ML;
-      values.forEach(function(v,i){
+      vals.forEach(function(v,i){
         var c=cols[i];
-        var color=v.color||DARK;
-        doc.setTextColor(color[0],color[1],color[2]);
-        doc.text(typeof v==='string'?v:(v.text!=null?String(v.text):''),c.align==='right'?x+c.width-1:x+2,y+4,{align:c.align||'left'});
-        x+=c.width;
+        var txt=typeof v==='string'?v:(v.t!=null?String(v.t):'');
+        var col=typeof v==='object'&&v.c?v.c:DARK;
+        var bold=typeof v==='object'&&v.b;
+        doc.setFont('helvetica',bold?'bold':'normal');
+        doc.setTextColor(col[0],col[1],col[2]);
+        doc.text(txt,c.r?x+c.w-1:x+1.5,y+4,{align:c.r?'right':'left'});
+        x+=c.w;
       });
-      y+=5.5;
+      y+=5.5;hline(y-0.2,LGREY);
     }
 
-    function divider(){
-      checkY(4);
-      doc.setDrawColor(35,40,55);doc.setLineWidth(0.3);
-      doc.line(ML,y,W-MR,y);
-      y+=4;
+    function para(title,text){
+      checkY(28);
+      doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+      doc.text(title,ML,y);y+=5;
+      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(MID[0],MID[1],MID[2]);
+      var lines=doc.splitTextToSize(text,pageW);
+      lines.forEach(function(l){checkY(5);doc.text(l,ML,y);y+=4.5;});
+      y+=2;
     }
 
-    function label(txt,color){
-      doc.setFontSize(7);doc.setFont('helvetica','normal');
-      doc.setTextColor(color?color[0]:GREY[0],color?color[1]:GREY[1],color?color[2]:GREY[2]);
-      doc.text(txt,ML,y);y+=4;
+    function bullet(ico,title,text,col){
+      checkY(20);
+      doc.setFontSize(8);doc.setFont('helvetica','bold');
+      doc.setTextColor((col||BLUE)[0],(col||BLUE)[1],(col||BLUE)[2]);
+      doc.text(ico+' '+title,ML,y);y+=5;
+      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(MID[0],MID[1],MID[2]);
+      var lines=doc.splitTextToSize(text,pageW-4);
+      lines.forEach(function(l){checkY(5);doc.text(l,ML+4,y);y+=4.5;});
+      y+=2;
     }
 
-    // ══════════════════════════════════════════
-    // COUVERTURE
-    // ══════════════════════════════════════════
-    doc.setFillColor(DARK[0],DARK[1],DARK[2]);
-    doc.rect(0,0,W,H,'F');
-    // Bande dorée
-    doc.setFillColor(GOLD[0],GOLD[1],GOLD[2]);
-    doc.rect(0,60,W,2,'F');
-    doc.rect(0,H-30,W,2,'F');
-    // Titre
-    doc.setFontSize(28);doc.setFont('helvetica','bold');
+    // ══════════════════════════════════
+    // PAGE 1 — COUVERTURE
+    // ══════════════════════════════════
+    // Bandeau titre
+    doc.setFillColor(30,30,30);doc.rect(0,0,W,50,'F');
+    doc.setFontSize(26);doc.setFont('helvetica','bold');
     doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
-    doc.text('FinLOLO',W/2,80,{align:'center'});
-    doc.setFontSize(13);doc.setFont('helvetica','normal');
-    doc.setTextColor(LIGHT[0],LIGHT[1],LIGHT[2]);
-    doc.text('Rapport Patrimonial — Laurent ROUSSEL',W/2,92,{align:'center'});
-    doc.setFontSize(9);doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-    doc.text('À destination de : Guillaume Menneguin, UBS France SA',W/2,102,{align:'center'});
-    doc.text('Généré le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}),W/2,110,{align:'center'});
+    doc.text('FinLOLO',W/2,22,{align:'center'});
+    doc.setFontSize(11);doc.setFont('helvetica','normal');
+    doc.setTextColor(220,220,220);
+    doc.text('Rapport Patrimonial — Laurent ROUSSEL',W/2,32,{align:'center'});
+    doc.setFontSize(8.5);doc.setTextColor(160,165,175);
+    doc.text('À destination de : Guillaume Menneguin — UBS France SA',W/2,40,{align:'center'});
+    doc.text('Généré le '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}),W/2,47,{align:'center'});
+
+    y=60;
     // Sommaire
-    doc.setFontSize(8);doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-    var sommaire=['PARTIE I — REPORTING CHIFFRÉ','1. Bilan patrimonial synthétique','2. Performance TWRR par enveloppe','3. Détail Crédit Lombard','4. Produits structurés en cours','5. Frais de gestion','','PARTIE II — RAPPORT DE SITUATION','6. Analyse de la situation','7. Points d\'attention','8. Prochaines étapes recommandées'];
-    sommaire.forEach(function(l,i){
-      doc.setTextColor(l.startsWith('PARTIE')?GOLD[0]:GREY[0],l.startsWith('PARTIE')?GOLD[1]:GREY[1],l.startsWith('PARTIE')?GOLD[2]:GREY[2]);
-      doc.setFont('helvetica',l.startsWith('PARTIE')?'bold':'normal');
-      if(l) doc.text(l,W/2,150+i*7,{align:'center'});
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('SOMMAIRE',ML,y);hline(y+2,GOLD);y+=8;
+
+    var som=[
+      ['PARTIE I — REPORTING CHIFFRÉ',true],
+      ['1.  Bilan patrimonial synthétique',false],
+      ['2.  Performance TWRR par enveloppe',false],
+      ['3.  Détail Crédit Lombard',false],
+      ['4.  Produits structurés en cours',false],
+      ['5.  Frais de gestion',false],
+      ['',false],
+      ['PARTIE II — RAPPORT DE SITUATION',true],
+      ['6.  Analyse de la situation patrimoniale',false],
+      ['7.  Points d\'attention',false],
+      ['8.  Prochaines étapes recommandées',false],
+    ];
+    som.forEach(function(s){
+      if(!s[0]){y+=2;return;}
+      doc.setFontSize(s[1]?8.5:8);doc.setFont('helvetica',s[1]?'bold':'normal');
+      doc.setTextColor(s[1]?GOLD[0]:MID[0],s[1]?GOLD[1]:MID[1],s[1]?GOLD[2]:MID[2]);
+      doc.text(s[0],s[1]?ML:ML+5,y);y+=6;
     });
 
-    // ══════════════════════════════════════════
-    // PAGE 2 — PARTIE I : REPORTING CHIFFRÉ
-    // ══════════════════════════════════════════
+    // Pied couverture
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+    doc.text('Document confidentiel — Usage réservé aux relations avec UBS France SA',ML,H-10);
+    doc.text('Page 1',W-ML,H-10,{align:'right'});
+
+    // ══════════════════════════════════
+    // PAGE 2 — BILAN + PERFORMANCE
+    // ══════════════════════════════════
     newPage();
-    doc.setFillColor(DARK[0],DARK[1],DARK[2]);
-    doc.rect(0,0,W,H,'F');
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('PARTIE I — REPORTING CHIFFRÉ',ML,y);y+=8;
 
-    // En-tête page
-    doc.setFontSize(7);doc.setFont('helvetica','normal');
-    doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-    doc.text('FinLOLO — Rapport Patrimonial Laurent ROUSSEL',ML,12);
-    doc.text('Arrêté au 05/04/2026 — Confidentiel',W-MR,12,{align:'right'});
-    doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(0.5);
-    doc.line(ML,14,W-MR,14);
-    y=20;
-
-    // Titre partie
-    doc.setFontSize(13);doc.setFont('helvetica','bold');
-    doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
-    doc.text('PARTIE I — REPORTING CHIFFRÉ',ML,y);y+=10;
-
-    // 1. Bilan patrimonial
-    sectionHeader('1. Bilan patrimonial synthétique',[30,50,80]);
-
+    // 1. Bilan
+    secTitle('1. Bilan patrimonial synthétique');
     var pt=ptotal(),pn=pnet(),solde=soldeLombard(),ltvV=ltv();
     kpiRow([
       {label:'Patrimoine brut',value:eur(pt),color:BLUE},
@@ -3141,306 +3154,242 @@ function _buildPDF(){
       {label:'LTV collatéral',value:pct(ltvV),color:ltvV>0.55?RED:GREEN}
     ]);
 
-    // Table enveloppes
-    var cols1=[{text:'Enveloppe',width:55},{text:'Valeur',width:30,align:'right'},{text:'PRU',width:28,align:'right'},{text:'P&L brut',width:28,align:'right'},{text:'%',width:18,align:'right'},{text:'Date',width:25,align:'right'}];
-    tableHeader(cols1);
+    var c1=[{t:'Enveloppe',w:50},{t:'Valeur',w:32,r:true},{t:'PRU',w:30,r:true},{t:'P&L brut',w:30,r:true},{t:'%',w:18,r:true},{t:'Date',w:14,r:true}];
+    tHead(c1);
     D.enveloppes.forEach(function(e,i){
-      var val=valEnv(e.id);
-      var pru=e.pru||0;
-      var rachats=e.rachats_documentes||0;
-      var pnl=pru>0?val+rachats-pru:null;
-      var pct_=pnl!=null?(pnl/pru*100):null;
+      var val=valEnv(e.id),pru=e.pru||0,rachats=e.rachats_documentes||0;
+      var pnl=pru>0?val+rachats-pru:null,pct_=pnl!=null?pnl/pru*100:null;
       var snap=lastSnap(e.id);
-      tableRow(cols1,[
-        {text:e.court,color:LIGHT},
-        {text:eur(val),color:LIGHT,align:'right'},
-        {text:pru?eur(pru):'—',color:GREY,align:'right'},
-        {text:pnl!=null?(pnl>=0?'+':'')+eur(Math.round(pnl)):'—',color:pnl>=0?GREEN:RED},
-        {text:pct_!=null?(pct_>=0?'+':'')+pct_.toFixed(1)+'%':'—',color:pct_>=0?GREEN:RED},
-        {text:snap?new Date(snap.date).toLocaleDateString('fr-FR',{month:'2-digit',year:'2-digit'}):'—',color:GREY}
+      tRow(c1,[
+        {t:e.court,c:DARK},
+        {t:eur(val),c:DARK,r:true},
+        {t:pru?eur(pru):'—',c:GREY,r:true},
+        {t:pnl!=null?(pnl>=0?'+':'')+eur(Math.round(pnl)):'—',c:pnl!=null&&pnl>=0?GREEN:RED,r:true},
+        {t:pct_!=null?(pct_>=0?'+':'')+pct_.toFixed(1)+'%':'—',c:pct_!=null&&pct_>=0?GREEN:RED,r:true},
+        {t:snap?new Date(snap.date).toLocaleDateString('fr-FR',{month:'2-digit',year:'2-digit'}):'—',c:GREY,r:true}
       ],i%2===0);
     });
-    // Ligne total
-    tableRow(cols1,[
-      {text:'TOTAL BRUT',color:GOLD},{text:eur(pt),color:GOLD},{text:'',color:GOLD},
-      {text:'',color:GOLD},{text:'',color:GOLD},{text:'',color:GOLD}
-    ],false,true);
-    y+=3;
+    // Total
+    doc.setFillColor(240,242,246);doc.rect(ML,y,pageW,6,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('TOTAL BRUT',ML+1.5,y+4.2);doc.text(eur(pt),ML+50+32-1,y+4.2,{align:'right'});
+    y+=8;
 
-    // 2. Performance TWRR
-    checkY(40);
-    sectionHeader('2. Performance TWRR — Enveloppes principales',[30,70,50]);
-
+    // 2. Performance — SANS colonne MSCI
+    secTitle('2. Performance TWRR — Enveloppes principales');
     var rUBS=rendAnnualise('ubs');
     var comp=rendCompositeUBSFantom();
-    var twMandat=calcTWRRMandat();
-    var msciRef=msciAccTWRR('2021-09-13','2026-04-05');
-    var coutL=(getEuribor('2026-02-16')+SPREAD);
+    var twM=calcTWRRMandat();
+    var coutL=getEuribor('2026-02-16')+SPREAD;
 
-    var cols2=[{text:'Périmètre',width:65},{text:'TWRR/an',width:28,align:'right'},{text:'Vs MSCI World',width:32,align:'right'},{text:'Vs Lombard',width:28,align:'right'},{text:'Période',width:35,align:'right'}];
-    tableHeader(cols2);
-    var perfRows2=[
-      {label:'AV UBS seule (corrigée rachats)',r:rUBS,periode:'sept.2021→avr.2026'},
-      {label:'AV UBS + AV FANTOM (composite)',r:comp.composite,periode:new Date(comp.startDate).toLocaleDateString('fr-FR',{month:'short',year:'2-digit'})+'→'+new Date(comp.endDate).toLocaleDateString('fr-FR',{month:'short',year:'2-digit'})},
-      {label:'Mandat UBS isolé (TWRR sur jalons)',r:twMandat.twrr,periode:'sept.2021→avr.2026'},
-      {label:'MSCI World Acc EUR (benchmark)',r:msciRef,periode:'sept.2021→avr.2026'},
-      {label:'Coût Lombard actuel (Euribor+0,50%)',r:coutL,periode:'taux en vigueur'}
+    var c2=[{t:'Périmètre',w:90},{t:'TWRR/an',w:28,r:true},{t:'Vs Lombard',w:28,r:true},{t:'Période',w:28,r:true}];
+    tHead(c2);
+    var rows2=[
+      {l:'AV UBS seule (corrigée rachats)',r:rUBS,p:'sept.2021 → avr.2026'},
+      {l:'AV UBS + AV FANTOM (composite)',r:comp.composite,p:new Date(comp.startDate).toLocaleDateString('fr-FR',{month:'short',year:'2-digit'})+' → '+new Date(comp.endDate).toLocaleDateString('fr-FR',{month:'short',year:'2-digit'})},
+      {l:'Mandat UBS isolé (TWRR jalons AEP)',r:twM.twrr,p:'sept.2021 → avr.2026'},
+      {l:'Coût Lombard actuel (Euribor 3M + 0,50%)',r:coutL,p:'taux en vigueur'}
     ];
-    perfRows2.forEach(function(row,i){
-      var vsM=row.r!=null&&msciRef?row.r-msciRef:null;
+    rows2.forEach(function(row,i){
       var vsL=row.r!=null?row.r-coutL:null;
-      tableRow(cols2,[
-        {text:row.label,color:row.label.includes('MSCI')?[244,114,182]:row.label.includes('Lombard')?RED:LIGHT},
-        {text:row.r!=null?(row.r>=0?'+':'')+( row.r*100).toFixed(2)+'%':' —',color:row.r>=0?GREEN:RED},
-        {text:vsM!=null?(vsM>=0?'+':'')+( vsM*100).toFixed(2)+'pp':'—',color:!vsM?GREY:vsM>=0?GREEN:RED},
-        {text:vsL!=null&&!row.label.includes('Lombard')?(vsL>=0?'+':'')+( vsL*100).toFixed(2)+'pp':'—',color:!vsL||row.label.includes('Lombard')?GREY:vsL>=0?GREEN:RED},
-        {text:row.periode,color:GREY}
+      tRow(c2,[
+        {t:row.l,c:DARK},
+        {t:row.r!=null?(row.r>=0?'+':'')+( row.r*100).toFixed(2)+'%':'—',c:row.r!=null&&row.r>=coutL?GREEN:RED,r:true},
+        {t:vsL!=null&&!row.l.includes('Lombard')?(vsL>=0?'+':'')+( vsL*100).toFixed(2)+'pp':'—',c:vsL!=null&&!row.l.includes('Lombard')?vsL>=0?GREEN:RED:GREY,r:true},
+        {t:row.p,c:GREY,r:true}
       ],i%2===0);
     });
-    y+=3;
-    label('⚠ Le MSCI World 100% actions n\'est pas le benchmark approprié pour le mandat UBS (profil équilibré). Comparer idéalement à un 50/50 MSCI World / Bloomberg Aggregate EUR.',[160,130,50]);
+    y+=2;
+    doc.setFontSize(7);doc.setFont('helvetica','italic');doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+    doc.text('Note : Le mandat UBS est géré avec un profil Équilibré (actions + obligations + structurés). Le benchmark approprié est un indice mixte 50/50, pas le MSCI World pur.',ML,y,{maxWidth:pageW});
+    y+=8;
 
-    // ══════════════════════════════════════════
-    // PAGE 3 — Lombard + Structurés
-    // ══════════════════════════════════════════
+    // ══════════════════════════════════
+    // PAGE 3 — LOMBARD + STRUCTURÉS
+    // ══════════════════════════════════
     newPage();
-    doc.setFillColor(DARK[0],DARK[1],DARK[2]);
-    doc.rect(0,0,W,H,'F');
-    doc.setFontSize(7);doc.setFont('helvetica','normal');
-    doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-    doc.text('FinLOLO — Rapport Patrimonial Laurent ROUSSEL',ML,12);
-    doc.text('Arrêté au 05/04/2026 — Confidentiel',W-MR,12,{align:'right'});
-    doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(0.5);
-    doc.line(ML,14,W-MR,14);
-    y=20;
 
     // 3. Lombard
-    sectionHeader('3. Crédit Lombard N°5033576',[70,30,30]);
-    var L=D.lombard;
+    secTitle('3. Crédit Lombard N°5033576');
     var collat=ltvCollatéral();
     kpiRow([
       {label:'Solde estimé',value:eur(solde),color:RED},
       {label:'Collatéral total',value:eur(collat),color:BLUE},
       {label:'LTV',value:pct(ltvV),color:ltvV>0.55?RED:GREEN},
-      {label:'Buffer avant 65%',value:eur(collat*0.65-solde),color:GREEN}
+      {label:'Buffer avant 65%',value:eur(Math.round(collat*0.65-solde)),color:GREEN}
     ]);
 
-    // Historique remboursements
-    var cols3=[{text:'Date',width:32},{text:'Opération',width:80},{text:'Montant',width:35,align:'right'},{text:'Solde cumulé',width:27,align:'right'}];
-    tableHeader(cols3);
-    var allFlux2=[];
-    allFlux2.push({date:L.date,montant:L.initial,type:'tirage',label:'Tirage initial Lombard'});
-    L.retirages.forEach(function(r){allFlux2.push({date:r.date,montant:r.montant,type:'tirage',label:r.note});});
-    L.remboursements.forEach(function(r){allFlux2.push({date:r.date,montant:-r.montant,type:'remb',label:r.note||'Remboursement'});});
-    allFlux2.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-    var cum2=0;
-    allFlux2.forEach(function(f,i){
-      cum2+=f.montant;
-      tableRow(cols3,[
-        {text:new Date(f.date).toLocaleDateString('fr-FR'),color:GREY},
-        {text:f.label.length>45?f.label.slice(0,43)+'…':f.label,color:LIGHT},
-        {text:(f.montant>0?'+':'')+eur(f.montant),color:f.type==='tirage'?RED:GREEN},
-        {text:eur(cum2),color:GREY}
+    var c3=[{t:'Date',w:22},{t:'Opération',w:88},{t:'Montant',w:28,r:true},{t:'Solde cumulé',w:36,r:true}];
+    tHead(c3);
+    var L=D.lombard,allF=[];
+    allF.push({date:L.date,montant:L.initial,type:'t',label:'Tirage initial Lombard'});
+    L.retirages.forEach(function(r){allF.push({date:r.date,montant:r.montant,type:'t',label:r.note||'Re-tirage'});});
+    L.remboursements.forEach(function(r){allF.push({date:r.date,montant:-r.montant,type:'r',label:r.note||'Remboursement'});});
+    allF.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+    var cum=0;
+    allF.forEach(function(f,i){
+      cum+=f.montant;
+      tRow(c3,[
+        {t:new Date(f.date).toLocaleDateString('fr-FR'),c:GREY},
+        {t:f.label.length>52?f.label.slice(0,50)+'…':f.label,c:DARK},
+        {t:(f.montant>0?'+':'')+eur(f.montant),c:f.type==='t'?RED:GREEN,r:true},
+        {t:eur(cum),c:GREY,r:true}
       ],i%2===0);
     });
-
-    // Intérêts Lombard
     y+=3;
-    label('Intérêts prélevés crédit N°5033576 (historique documenté) :');
-    var interets=[
-      {d:'31/03/2022',m:108.75},{d:'30/06/2022',m:379.42},{d:'30/09/2022',m:701.62},
+
+    // Intérêts
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('Intérêts prélevés (N°5033576 — documentés jusqu\'au T1 2024) :',ML,y);y+=5;
+    var ci=[{t:'Trimestre',w:30},{t:'Intérêts',w:30,r:true},{t:'',w:114}];
+    tHead(ci);
+    var ints=[{d:'31/03/2022',m:108.75},{d:'30/06/2022',m:379.42},{d:'30/09/2022',m:701.62},
       {d:'31/12/2022',m:3302.89},{d:'31/03/2023',m:6280.80},{d:'30/06/2023',m:7465.77},
-      {d:'30/09/2023',m:8655.78},{d:'31/12/2023',m:9146.97},{d:'31/03/2024',m:9441.46}
-    ];
-    var totalInt=interets.reduce(function(a,x){return a+x.m;},0);
-    var cols3b=[{text:'Trimestre',width:35},{text:'Intérêts prélevés',width:40,align:'right'},{text:'',width:99}];
-    tableHeader(cols3b);
-    interets.forEach(function(x,i){
-      tableRow(cols3b,[{text:x.d,color:GREY},{text:eur(x.m,2),color:RED},{text:'',color:GREY}],i%2===0);
-    });
-    tableRow(cols3b,[{text:'TOTAL',color:GOLD},{text:eur(totalInt,2),color:RED},{text:'(jusqu\'au T1 2024 — à compléter)',color:GREY}],false,true);
-    y+=3;
-    label('Taux contractuel : Euribor 3M + spread 0,50% — Plafond ligne : '+eur(L.plafond_actuel),[160,130,50]);
+      {d:'30/09/2023',m:8655.78},{d:'31/12/2023',m:9146.97},{d:'31/03/2024',m:9441.46}];
+    var totInt=ints.reduce(function(a,x){return a+x.m;},0);
+    ints.forEach(function(x,i){tRow(ci,[{t:x.d,c:GREY},{t:eur(x.m,2),c:RED,r:true},{t:'',c:GREY}],i%2===0);});
+    doc.setFillColor(240,242,246);doc.rect(ML,y,pageW,6,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('TOTAL (T1 2022 – T1 2024)',ML+1.5,y+4.2);doc.text(eur(totInt,2),ML+30-1,y+4.2,{align:'right'});
+    y+=8;
+    doc.setFontSize(7);doc.setFont('helvetica','italic');doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+    doc.text('Taux contractuel : Euribor 3M + spread 0,50% — Plafond ligne : '+eur(L.plafond_actuel),ML,y);y+=7;
 
-    // 4. Structurés en cours
-    checkY(20);
-    sectionHeader('4. Produits structurés en cours',[30,60,80]);
+    // 4. Structurés
+    secTitle('4. Produits structurés en cours');
+    var c4=[{t:'Produit',w:68},{t:'Env.',w:14},{t:'Investi',w:24,r:true},{t:'Valeur',w:24,r:true},{t:'P&L',w:24,r:true},{t:'Échéance',w:20,r:true}];
+    tHead(c4);
     var stEc=D.structures.filter(function(s){return s.statut==='EN COURS';});
-    var cols4=[{text:'Produit',width:68},{text:'Env.',width:18},{text:'Investi',width:25,align:'right'},{text:'Valeur',width:25,align:'right'},{text:'P&L lat.',width:22,align:'right'},{text:'Échéance',width:16,align:'right'}];
-    tableHeader(cols4);
-    var totalInvesti=0,totalVal=0;
+    var totInv=0,totVal=0;
     stEc.forEach(function(s,i){
-      totalInvesti+=s.investi||0;totalVal+=s.val||0;
+      totInv+=s.investi||0;totVal+=s.val||0;
       var pnl=s.pnl_latent;
-      tableRow(cols4,[
-        {text:s.nom.length>40?s.nom.slice(0,38)+'…':s.nom,color:LIGHT},
-        {text:envName(s.env).replace('AV ','').replace('FANTOM','FTM'),color:GREY},
-        {text:eur(s.investi),color:GREY},
-        {text:s.val?eur(s.val):'—',color:LIGHT},
-        {text:pnl!=null?(pnl>=0?'+':'')+eur(Math.round(pnl)):'—',color:pnl>=0?GREEN:RED},
-        {text:s.echeance?new Date(s.echeance).toLocaleDateString('fr-FR',{month:'2-digit',year:'2-digit'}):'—',color:GREY}
+      tRow(c4,[
+        {t:s.nom.length>42?s.nom.slice(0,40)+'…':s.nom,c:DARK},
+        {t:(s.env||'').replace('av_ubs','UBS').replace('av_cnp_fantom','FTM').replace('av_bnp','BNP'),c:GREY},
+        {t:s.investi?eur(s.investi):'—',c:GREY,r:true},
+        {t:s.val?eur(s.val):'—',c:DARK,r:true},
+        {t:pnl!=null?(pnl>=0?'+':'')+eur(Math.round(pnl)):'—',c:pnl!=null?pnl>=0?GREEN:RED:GREY,r:true},
+        {t:s.echeance?new Date(s.echeance).toLocaleDateString('fr-FR',{month:'2-digit',year:'2-digit'}):'—',c:GREY,r:true}
       ],i%2===0);
     });
-    tableRow(cols4,[{text:'TOTAL EN COURS',color:GOLD},{text:'',color:GOLD},{text:eur(totalInvesti),color:GOLD},{text:eur(totalVal),color:totalVal>=totalInvesti?GREEN:RED},{text:(totalVal>=totalInvesti?'+':'')+eur(totalVal-totalInvesti),color:totalVal>=totalInvesti?GREEN:RED},{text:'',color:GOLD}],false,true);
+    doc.setFillColor(240,242,246);doc.rect(ML,y,pageW,6,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('TOTAL EN COURS',ML+1.5,y+4.2);
+    doc.text(eur(totInv),ML+68+14+24-1,y+4.2,{align:'right'});
+    doc.text(eur(totVal),ML+68+14+24+24-1,y+4.2,{align:'right'});
+    var totPnl=totVal-totInv;
+    doc.setTextColor(totPnl>=0?GREEN[0]:RED[0],totPnl>=0?GREEN[1]:RED[1],totPnl>=0?GREEN[2]:RED[2]);
+    doc.text((totPnl>=0?'+':'')+eur(Math.round(totPnl)),ML+68+14+24+24+24-1,y+4.2,{align:'right'});
+    y+=10;
+
+    // ══════════════════════════════════
+    // PAGE 4 — FRAIS + SITUATION
+    // ══════════════════════════════════
+    newPage();
 
     // 5. Frais
-    y+=5;
-    checkY(30);
-    sectionHeader('5. Frais de gestion AV UBS (documentés)',[60,40,20]);
-    var cols5=[{text:'Année',width:22},{text:'Gestion/Adm.',width:35,align:'right'},{text:'Mandat',width:30,align:'right'},{text:'Prél. soc.',width:28,align:'right'},{text:'Total',width:30,align:'right'},{text:'Source',width:29,align:'right'}];
-    tableHeader(cols5);
-    var totalFrais=0;
+    secTitle('5. Frais de gestion AV UBS (documentés)');
+    var c5=[{t:'Année',w:20},{t:'Gestion/Adm.',w:35,r:true},{t:'Mandat',w:30,r:true},{t:'Prél. soc.',w:28,r:true},{t:'Total',w:28,r:true},{t:'Source',w:33,r:true}];
+    tHead(c5);
+    var totFrais=0;
     D.frais.forEach(function(f,i){
-      totalFrais+=f.total;
-      tableRow(cols5,[
-        {text:''+f.annee,color:LIGHT},
-        {text:eur(f.adm,0),color:GREY},
-        {text:eur(f.mandat,0),color:GREY},
-        {text:f.ps?eur(f.ps,0):'—',color:GREY},
-        {text:eur(f.total,0),color:[245,147,64]},
-        {text:f.src==='documenté'?'✓ doc.':'~ estim.',color:f.src==='documenté'?GREEN:GREY}
+      totFrais+=f.total;
+      tRow(c5,[
+        {t:''+f.annee,c:DARK},
+        {t:eur(f.adm,0),c:GREY,r:true},
+        {t:eur(f.mandat,0),c:GREY,r:true},
+        {t:f.ps?eur(f.ps,0):'—',c:GREY,r:true},
+        {t:eur(f.total,0),c:DARK,r:true},
+        {t:f.src==='documenté'?'✓ documenté':'~ estimé',c:f.src==='documenté'?GREEN:GREY,r:true}
       ],i%2===0);
     });
-    tableRow(cols5,[{text:'TOTAL',color:GOLD},{text:'',color:GOLD},{text:'',color:GOLD},{text:'',color:GOLD},{text:eur(totalFrais,0),color:GOLD},{text:'',color:GOLD}],false,true);
+    doc.setFillColor(240,242,246);doc.rect(ML,y,pageW,6,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('TOTAL',ML+1.5,y+4.2);doc.text(eur(totFrais,0),ML+20+35+30+28+28-1,y+4.2,{align:'right'});
+    y+=12;
 
-    // ══════════════════════════════════════════
-    // PAGE 4 — PARTIE II : RAPPORT DE SITUATION
-    // ══════════════════════════════════════════
-    newPage();
-    doc.setFillColor(DARK[0],DARK[1],DARK[2]);
-    doc.rect(0,0,W,H,'F');
-    doc.setFontSize(7);doc.setFont('helvetica','normal');
-    doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-    doc.text('FinLOLO — Rapport Patrimonial Laurent ROUSSEL',ML,12);
-    doc.text('Arrêté au 05/04/2026 — Confidentiel',W-MR,12,{align:'right'});
-    doc.setDrawColor(GOLD[0],GOLD[1],GOLD[2]);doc.setLineWidth(0.5);
-    doc.line(ML,14,W-MR,14);
-    y=20;
-
-    doc.setFontSize(13);doc.setFont('helvetica','bold');
-    doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
-    doc.text('PARTIE II — RAPPORT DE SITUATION',ML,y);y+=12;
+    // PARTIE II
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+    doc.text('PARTIE II — RAPPORT DE SITUATION',ML,y);y+=8;
 
     // 6. Analyse
-    sectionHeader('6. Analyse de la situation patrimoniale',[30,70,50]);
-
-    function para(title,text,color){
-      checkY(22);
-      doc.setFontSize(8);doc.setFont('helvetica','bold');
-      doc.setTextColor((color||BLUE)[0],(color||BLUE)[1],(color||BLUE)[2]);
-      doc.text(title,ML,y);y+=5;
-      doc.setFontSize(7.5);doc.setFont('helvetica','normal');
-      doc.setTextColor(LIGHT[0],LIGHT[1],LIGHT[2]);
-      var lines=doc.splitTextToSize(text,pageW);
-      lines.forEach(function(l){checkY(5);doc.text(l,ML,y);y+=4.5;});
-      y+=2;
-    }
-
+    secTitle('6. Analyse de la situation patrimoniale');
     para('Structure patrimoniale',
       'Le patrimoine brut s\'élève à '+eur(pt)+' au 05/04/2026, composé à 59% de l\'AV UBS Multi-Opportunités Vie 2 ('+eur(valEnv('av_ubs'))+'), 25% de l\'AV CNP FANTOM ('+eur(valEnv('av_cnp_fantom'))+'), et 16% d\'autres enveloppes (PEA, AV BNP, PE, Finary Life). Après déduction du crédit Lombard ('+eur(solde)+'), le patrimoine net ressort à '+eur(pn)+'.');
-
     para('Performance globale',
-      'Le TWRR de l\'AV UBS sur 4,6 ans s\'établit à +2,92%/an, à comparer au MSCI World Acc EUR (+9,89%/an sur la même période). L\'écart s\'explique par (1) le profil équilibré du mandat UBS (actions + obligations + structurés), (2) le poids des structurés à capital garanti à faible rendement courant, et (3) la baisse subie en 2022 non entièrement rattrapée. Le mandat UBS isolé affiche +0,92%/an — sous-performance réelle par rapport à un indice 100% actions, mais cohérente avec un profil Équilibré validé.');
-
+      'Le TWRR de l\'AV UBS sur 4,6 ans s\'établit à +2,92%/an. L\'écart vs un ETF 100% actions s\'explique par le profil équilibré du mandat (actions + obligations + structurés), le poids des structurés à capital garanti à faible rendement courant, et la baisse de 2022 non entièrement rattrapée. Le mandat UBS isolé affiche +0,92%/an, cohérent avec un profil Équilibré validé.');
     para('Crédit Lombard',
-      'Le Lombard (solde '+eur(solde)+') coûte actuellement '+((coutL)*100).toFixed(2)+'%/an (Euribor 3M '+( getEuribor('2026-02-16')*100).toFixed(2)+'% + spread 0,50%). La LTV est à '+pct(ltvV)+' sur un seuil d\'alerte contractuel de 65%, laissant un buffer de '+eur(Math.round(collat*0.65-solde))+'. La stratégie de remboursement progressif ('+eur(100000)+' en avr. 2025, '+eur(50000)+' en fév. et mars 2026) réduit l\'exposition. Le différentiel rendement/coût Lombard reste légèrement négatif sur l\'AV UBS (-0,03%/an), ce qui justifie une poursuite du désendettement.');
-
-    para('Structurés',
-      stEc.length+' produits en cours pour '+eur(totalInvesti)+' investis, valorisés '+eur(totalVal)+' (P&L latent '+(totalVal>=totalInvesti?'+':'')+eur(totalVal-totalInvesti)+'). Prochaines constatations importantes : Alizé O2 Oil&Gas (quotidien dès oct. 2026), Alizé O2 Santé (quotidien dès oct. 2026), LMDG Float-to-Fix 2027 (jan. 2027). Le Climber 8 Ans Luxe 2026 (100k€, souscrit mars 2026) a sa première constatation autocall en mars 2027.');
+      'Le Lombard (solde '+eur(solde)+') coûte '+((coutL)*100).toFixed(2)+'%/an (Euribor 3M '+( getEuribor('2026-02-16')*100).toFixed(2)+'% + spread 0,50%). LTV à '+pct(ltvV)+', buffer de '+eur(Math.round(collat*0.65-solde))+' avant le seuil de 65%. Le différentiel rendement/coût Lombard sur l\'AV UBS est légèrement négatif (-0,03%/an), ce qui justifie la poursuite du désendettement progressif.');
+    para('Produits structurés',
+      stEc.length+' produits en cours pour '+eur(totInv)+' investis, valorisés '+eur(totVal)+' (P&L latent '+(totPnl>=0?'+':'')+eur(Math.round(totPnl))+'). Prochaines constatations : Alizé O2 Oil&Gas + Santé (quotidien dès oct. 2026), LMDG Float-to-Fix 2027 (jan. 2027), Climber 8 Ans Luxe (mars 2027).');
 
     // 7. Points d'attention
-    sectionHeader('7. Points d\'attention',RED);
-
-    var points=[
-      {ico:'⚠',title:'Reporting mandat UBS',txt:'Absence de reporting MIF II régulier sur le mandat (composition, benchmark officiel, frais détaillés). Demander systématiquement le rapport trimestriel et le document de coûts ex-post.'},
-      {ico:'⚠',title:'Concentration structurés sectoriels',txt:'Exposition historique importante au secteur Oil & Gas (Alizé 5A ×2, Climber Oil&Gas) — certains remboursés. Éviter le renouvellement sur ce secteur, privilégier Eurostoxx 50 ou indices larges.'},
-      {ico:'ℹ',title:'Valorisation PE figée',txt:'La valorisation Global Strategies 2021 SLP est figée au 30/06/2023 (109 950€). Demander une valorisation actualisée à Equitis Gestion pour fiabiliser le bilan.'},
-      {ico:'ℹ',title:'Seuils contractuels Lombard',txt:'Les seuils exacts d\'alerte et de liquidation du crédit N°5033576 ne sont pas documentés dans FinLOLO. À confirmer avec UBS pour sécuriser le monitoring LTV.'},
-      {ico:'✓',title:'LTV confortable',txt:'LTV à '+pct(ltvV)+' vs seuil 65% — buffer de '+eur(Math.round(collat*0.65-solde))+'. Pas d\'urgence mais vigilance si les marchés baissaient de >15%.'}
-    ];
-
-    points.forEach(function(p,i){
-      checkY(18);
-      var icoColor=p.ico==='⚠'?RED:p.ico==='✓'?GREEN:BLUE;
-      doc.setFontSize(8);doc.setFont('helvetica','bold');
-      doc.setTextColor(icoColor[0],icoColor[1],icoColor[2]);
-      doc.text(p.ico+' '+p.title,ML,y);y+=5;
-      doc.setFontSize(7.5);doc.setFont('helvetica','normal');
-      doc.setTextColor(LIGHT[0],LIGHT[1],LIGHT[2]);
-      var lines=doc.splitTextToSize(p.txt,pageW-5);
-      lines.forEach(function(l){checkY(5);doc.text(l,ML+4,y);y+=4.5;});
-      y+=2;
-    });
+    checkY(10);secTitle('7. Points d\'attention');
+    bullet('⚠','Reporting mandat UBS','Absence de reporting MIF II régulier sur le mandat (composition, benchmark officiel, frais détaillés). Demander systématiquement le rapport trimestriel et le document de coûts ex-post.',RED);
+    bullet('⚠','Concentration Oil & Gas','Exposition historique importante au secteur Oil & Gas. Éviter le renouvellement sur ce secteur, privilégier Eurostoxx 50 ou indices larges.',RED);
+    bullet('i','Valorisation PE figée','Global Strategies 2021 SLP figée au 30/06/2023 (109 950€). Demander une valorisation actualisée à Equitis Gestion.',BLUE);
+    bullet('i','Seuils contractuels Lombard','Les seuils exacts d\'alerte/liquidation du Lombard N°5033576 ne sont pas documentés. À confirmer avec UBS pour sécuriser le monitoring LTV.',BLUE);
+    bullet('✓','LTV confortable','LTV à '+pct(ltvV)+' vs seuil 65% — buffer de '+eur(Math.round(collat*0.65-solde))+'. Pas d\'urgence mais vigilance si baisse des marchés > 15%.',GREEN);
 
     // 8. Prochaines étapes
-    checkY(60);
-    sectionHeader('8. Prochaines étapes recommandées',BLUE);
-
+    checkY(10);secTitle('8. Prochaines étapes recommandées');
     var etapes=[
-      {delai:'Court terme (0–6 mois)',items:[
+      {d:'Court terme (0–6 mois)',items:[
         'Demander reporting mandat UBS Q1 2026 + document de coûts MIF II ex-post',
         'Confirmer les seuils contractuels d\'alerte/liquidation du Lombard N°5033576',
         'Surveiller les constatations autocall Alizé O2 Oil&Gas + Santé (oct. 2026)',
-        'Flécher les capitaux libérés (Alizé O2) vers ETF MSCI World dans l\'AV UBS'
+        'Flécher les capitaux libérés vers ETF MSCI World dans l\'AV UBS'
       ]},
-      {delai:'Moyen terme (6–18 mois)',items:[
-        'LMDG Float-to-Fix 2027 (~177k€ libérés UBS+FANTOM) : 60% ETF / 40% nouveau structuré indice large',
-        'Réduire progressivement le Lombard à 500–600k€ en fléchant les coupons + distributions PE',
+      {d:'Moyen terme (6–18 mois)',items:[
+        'LMDG Float-to-Fix 2027 (~177k€ libérés) : 60% ETF / 40% nouveau structuré indice large',
+        'Réduire progressivement le Lombard à 500–600k€ en fléchant coupons + distributions PE',
         'Demander valorisation actualisée Global Strategies 2021 SLP à Equitis Gestion',
         'Discuter migration partielle du mandat vers ETF (cible : garder ~200k€ en mandat actif)'
       ]},
-      {delai:'Long terme (post 2029)',items:[
+      {d:'Long terme (post 2029)',items:[
         'AV UBS atteint 8 ans en sept. 2029 — rachats partiels plus flexibles fiscalement',
         'Réévaluer l\'allocation PE après distribution complète Global Strategies',
         'Objectif LTV < 30% à horizon 5 ans'
       ]}
     ];
-
     etapes.forEach(function(e){
-      checkY(25);
-      doc.setFontSize(8.5);doc.setFont('helvetica','bold');
-      doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
-      doc.text(e.delai,ML,y);y+=5;
+      checkY(20);
+      doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(DARK[0],DARK[1],DARK[2]);
+      doc.text(e.d,ML,y);y+=5;
       e.items.forEach(function(item){
         checkY(6);
-        doc.setFontSize(7.5);doc.setFont('helvetica','normal');
-        doc.setTextColor(LIGHT[0],LIGHT[1],LIGHT[2]);
-        var lines=doc.splitTextToSize('→  '+item,pageW-6);
+        doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(MID[0],MID[1],MID[2]);
+        var lines=doc.splitTextToSize('→  '+item,pageW-5);
         lines.forEach(function(l){checkY(5);doc.text(l,ML+3,y);y+=4.5;});
       });
       y+=4;
     });
 
-    // Pied de dernière page
-    divider();
-    doc.setFontSize(7);doc.setTextColor(GREY[0],GREY[1],GREY[2]);
-    doc.text('Document généré par FinLOLO — Usage confidentiel, réservé à l\'usage interne et aux relations avec UBS France SA.',ML,y);y+=4;
+    // Pied final
+    checkY(12);hline(y,LGREY);y+=4;
+    doc.setFontSize(7);doc.setFont('helvetica','italic');doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+    doc.text('Document généré par FinLOLO — Usage confidentiel, réservé aux relations avec UBS France SA.',ML,y);y+=4;
     doc.text('Les performances passées ne préjugent pas des performances futures. Ce document ne constitue pas un conseil en investissement.',ML,y);
 
-    // Numéroter page 1 (couverture)
-    doc.setPage(1);
-    doc.setFontSize(7);doc.setTextColor(120,130,150);
-    doc.text('FinLOLO — Confidentiel — '+new Date().toLocaleDateString('fr-FR'),ML,H-8);
-    doc.text('Page 1 / '+page,W-ML,H-8,{align:'right'});
-
-    // Mettre à jour numéros de pages (total connu maintenant)
-    for(var p2=2;p2<=page;p2++){
-      doc.setPage(p2);
-      doc.setFontSize(7);doc.setTextColor(120,130,150);
-      doc.text('Page '+p2+' / '+page,W-ML,H-8,{align:'right'});
+    // Numéroter toutes les pages
+    var total=doc.getNumberOfPages();
+    for(var p=1;p<=total;p++){
+      doc.setPage(p);
+      doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(GREY[0],GREY[1],GREY[2]);
+      if(p>1)doc.text('Page '+p+' / '+total,W-MR,H-5,{align:'right'});
+      else doc.text('Page 1 / '+total,W-MR,H-10,{align:'right'});
     }
 
-    var fname='FinLOLO_Rapport_CGP_'+new Date().toISOString().slice(0,10)+'.pdf';
-    doc.save(fname);
+    doc.save('FinLOLO_Rapport_CGP_'+new Date().toISOString().slice(0,10)+'.pdf');
 
-  } catch(err){
+  }catch(err){
     console.error('PDF error:',err);
     alert('Erreur génération PDF : '+err.message);
-  } finally {
+  }finally{
     if(btn){btn.textContent='⎙ Rapport CGP (PDF)';btn.disabled=false;}
   }
 }
-
 // ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
