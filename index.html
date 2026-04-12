@@ -422,7 +422,7 @@ const D = {
         {date:"2023-04-30",montant:84520, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap interpolé, supposé POST"},
         {date:"2023-09-30",montant:49872, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap interpolé, supposé POST"},
         {date:"2024-04-30",montant:61526, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff mars24→avr24 ≈ rachat)"},
-        {date:"2025-03-31",montant:101823,snapPost:false,note:"Rachat AV UBS → Remb. Lombard — snap PRÉ-rachat (baisse avr25 = rachat + perf)"},
+        {date:"2025-04-10",montant:101823,snapPost:false,note:"Rachat AV UBS → Remb. Lombard — date exacte 10/04/2025 (avenant AEP confirmé) — snap PRÉ-rachat : valeur contrat avant = 1 153 008,74€"},
         {date:"2026-02-28",montant:50000, snapPost:true, note:"Rachat AV UBS → Remb. Lombard — snap POST (diff jan26→fév26 ≈ rachat)"}
       ],
       rachats_note:"Rachats AV UBS documentés — 6 virements confirmés."},
@@ -473,6 +473,8 @@ const D = {
     {date:"2025-02-28",env:"av_ubs",val:1200860},
     {date:"2025-03-15",env:"av_ubs",val:1204515},
     {date:"2025-03-31",env:"av_ubs",val:1192564},
+    // Valeur avant rachat 10/04/2025 confirmée par avenant AEP : 1 153 008,74€
+    {date:"2025-04-10",env:"av_ubs",val:1153009}, // ← PRÉ-rachat confirmé
     {date:"2025-04-30",env:"av_ubs",val:1075659},
     {date:"2025-05-31",env:"av_ubs",val:1091708},
     {date:"2025-06-30",env:"av_ubs",val:1098618},
@@ -771,20 +773,20 @@ const D = {
 
     // Flux entrants/sortants du mandat (nécessaires pour TWRR correct)
     flux:[
-      // Transfert documenté : AEP avenant — FG Bonus 150% → Mandat UBS
-      // Date exacte à confirmer — posé au 08/11/2022 (date avenant connu)
-      // Valeur mandat juste avant transfert inconnue → hypothèse calculée (484 821 × ratio)
-      {date:"2022-11-08", montant:50000, note:"Arbitrage FG Bonus 150% → Mandat (avenant AEP)", confirme:false}
+      // Transfert confirmé : Proposition d'investissement UBS du 18/07/2022
+      // FG Bonus 150% (Libre UBS) → Gestion Personnalisée (Mandat)
+      // Valeur mandat avant : 475 787,11€ | après : 525 787,11€ | flux = +50 000€
+      {date:"2022-07-18", montant:50000, note:"Arbitrage FG Bonus 150% → Mandat UBS (proposition investissement 18/07/2022 confirmée)", confirme:true}
     ],
 
     // Snapshots valorisation mandat (source: AEP trimestriels)
     snapshots:[
       {date:"2021-09-13", val:500000,  src:"AEP conditions particulières — mise initiale"},
-      {date:"2022-03-31", val:484821,  src:"AEP Q1 2022"},
-      // Valeur pré-transfert nov 2022 — interpolée linéairement entre mars 2022 et mars 2023
-      // (484821 + (524461-484821) × (mois_nov-mois_mars)/(mois_mars23-mois_mars22))
-      // = 484821 + 39640 × (8/12) = 484821 + 26427 = ~511248 (hors perf)
-      // Non inséré comme snapshot — le flux de 50k est traité séparément dans le TWRR
+      // Valeur mandat 14/07/2022 : 475 787,11€ (proposition investissement UBS 18/07/2022)
+      // C'est la valeur AVANT le transfert de 50k€ du 18/07/2022
+      {date:"2022-07-14", val:475787,  src:"Proposition investissement UBS 18/07/2022 — valeur avant transfert"},
+      // Valeur mandat 30/11/2022 : 516 989,71€ (AEP situation nov 2022 confirmée)
+      {date:"2022-11-30", val:516990,  src:"AEP situation 30/11/2022 — confirmé"},
       {date:"2023-03-31", val:524461,  src:"AEP Q1 2023"},
       {date:"2023-09-30", val:526941,  src:"AEP Q3 2023"},
       {date:"2024-03-31", val:563857,  src:"AEP Q1 2024"},
@@ -794,7 +796,7 @@ const D = {
     ],
 
     // Note méthodologique TWRR
-    note_twrr:"TWRR calculé sur jalons trimestriels disponibles. Le transfert de 50 000€ (nov. 2022) est neutralisé comme flux entrant. Valeur pré-transfert estimée par interpolation — à confirmer avec l'AEP Q3 2022 si disponible.",
+    note_twrr:"TWRR calculé sur jalons documentés. Données clés confirmées : transfert 50k€ du 18/07/2022 (proposition investissement UBS), valeur mandat 30/11/2022 = 516 990€ (AEP situation nov 2022). Flag confirme:true sur le flux.",
     note_frais:"Frais de gestion mandat (0,50%/an) prélevés en continu par UBS — valorisations déjà nettes. Frais AEP (0,50%/an) prélevés sur l'enveloppe globale, non isolables sur le mandat seul."
   },
 
@@ -2544,14 +2546,16 @@ function renderMandatSection(){
       +'</tr>';
   });
 
-  // Warning flux non confirmé
+  // Warning flux non confirmé → maintenant confirmé
   var fluxWarn='';
   var fluxNonConf=M.flux.filter(function(f){return !f.confirme;});
   if(fluxNonConf.length){
     fluxWarn='<div class="alert-warn" style="font-size:.72rem;margin-top:8px">'
-      +'⚠ Flux non confirmé : transfert de '+eur(fluxNonConf[0].montant)+' ('+fd(fluxNonConf[0].date)+') — '+fluxNonConf[0].note+'<br>'
-      +'Date et valeur pré-transfert à confirmer avec l\'AEP Q3 2022. Impact sur TWRR : '
-      +'neutralisé dans le calcul, mais la valeur interpolée au '+fd(fluxNonConf[0].date)+' est une estimation.'
+      +'⚠ Flux non confirmé : transfert de '+eur(fluxNonConf[0].montant)+' ('+fd(fluxNonConf[0].date)+') — '+fluxNonConf[0].note
+      +'</div>';
+  } else {
+    fluxWarn='<div class="alert-ok" style="font-size:.72rem;margin-top:8px">'
+      +'✓ Tous les flux sont confirmés par documents — transfert 50k€ du 18/07/2022 (proposition UBS), valeur mandat nov 2022 = 516 990€ (AEP situation 30/11/2022).'
       +'</div>';
   }
 
