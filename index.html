@@ -3062,7 +3062,7 @@ function _buildPDF(){
         var c=cols[i];
         var color=v.color||DARK;
         doc.setTextColor(color[0],color[1],color[2]);
-        doc.text(v.text||v,c.align==='right'?x+c.width-1:x+2,y+4,{align:c.align||'left'});
+        doc.text(typeof v==='string'?v:(v.text!=null?String(v.text):''),c.align==='right'?x+c.width-1:x+2,y+4,{align:c.align||'left'});
         x+=c.width;
       });
       y+=5.5;
