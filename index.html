@@ -536,6 +536,7 @@ const D = {
     {date:"2025-04-01",env:"pea_fortuneo",val:23721},
     {date:"2026-04-05",env:"pea_fortuneo",val:23755},
     {date:"2025-04-01",env:"av_bnp",val:153152},
+    {date:"2026-04-08",env:"av_bnp",val:164137},
     {date:"2025-04-01",env:"av_finary",val:3439},
     {date:"2026-04-05",env:"av_finary",val:3430},
     {date:"2023-06-30",env:"pe_global_strategies",val:109950}
@@ -750,7 +751,35 @@ const D = {
     solde_note:"Solde exact au 04/04/2026 confirmé (photo interface UBS). LTV = 707 813 / (1 064 067 + 448 393) = 46,8%.",
     solde_date_confirmation:"2026-04-04",
     ltv_seuil:0.65,
-    ltv_alerte:0.55
+    ltv_alerte:0.55,
+    // Seuils contractuels confirmés (Convention UBS Réf. 5978 + Avenant 18/07/2022)
+    delai_appel_marge_jours:2,   // 2 jours ouvrés (Annexe 2)
+    delai_liquidation_jours:5,   // 5 jours ouvrés (Annexe 2)
+    spread_contractuel:0.008,    // ESTER + 0,8% confirmé
+    ref_convention:"5978",
+    taux_reference:"ESTER",
+    // Intérêts prélevés sur le crédit N°5033576
+    // Sources : document UBS remis en main propre (T1 2022 - T1 2024 = documentés)
+    //           T2 2024 - T1 2026 = estimés (Euribor 3M historique + spread 0,80%)
+    interets:[
+      {date:"2022-03-31",montant:108.75,  src:"doc"},
+      {date:"2022-06-30",montant:379.42,  src:"doc"},
+      {date:"2022-09-30",montant:701.62,  src:"doc"},
+      {date:"2022-12-31",montant:3302.89, src:"doc"},
+      {date:"2023-03-31",montant:6280.80, src:"doc"},
+      {date:"2023-06-30",montant:7465.77, src:"doc"},
+      {date:"2023-09-30",montant:8655.78, src:"doc"},
+      {date:"2023-12-31",montant:9146.97, src:"doc"},
+      {date:"2024-03-31",montant:9441.46, src:"doc"},
+      {date:"2024-06-30",montant:9890,    src:"est", note:"Euribor 3M ~3.80% + 0.50% sur ~860k"},
+      {date:"2024-09-30",montant:10299,    src:"est", note:"Euribor 3M ~3.55% + 0.50% sur ~947k (re-tirage juin 2024)"},
+      {date:"2024-12-31",montant:9352,    src:"est", note:"Euribor 3M ~3.15% + 0.50% sur ~947k"},
+      {date:"2025-03-31",montant:8168,    src:"est", note:"Euribor 3M ~2.65% + 0.50% sur ~947k"},
+      {date:"2025-06-30",montant:6352,    src:"est", note:"Euribor 3M ~2.20% + 0.50% sur ~847k (remb. avr 2025)"},
+      {date:"2025-09-30",montant:6247,    src:"est", note:"Euribor 3M ~2.15% + 0.50% sur ~847k"},
+      {date:"2025-12-31",montant:6141,    src:"est", note:"Euribor 3M ~2.10% + 0.50% sur ~847k"},
+      {date:"2026-03-31",montant:6069,    src:"est", note:"Euribor 3M ~2.45% + 0.50% sur ~747k (remb. fev+mars 2026)"}
+    ]
   },
 
   frais:[
@@ -1927,9 +1956,46 @@ function renderLombard(){
           <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:4px;background:var(--green);border-radius:2px"></span>Remboursement</span>
         </div>
       </div>
-    </div>`;
+    </div>
+    ${renderInteretsLombard(L)}`;
 }
 
+
+function renderInteretsLombard(L){
+  if(!L.interets||!L.interets.length) return '';
+  const its=L.interets;
+  const totDoc=its.filter(x=>x.src==='doc').reduce((a,x)=>a+x.montant,0);
+  const totEst=its.filter(x=>x.src==='est').reduce((a,x)=>a+x.montant,0);
+  const totAll=totDoc+totEst;
+  const rows=its.map((x,i)=>{
+    const estBadge=x.src==='est'
+      ?`<span style="font-size:.6rem;color:var(--orange);background:rgba(245,147,64,.1);padding:1px 5px;border-radius:3px;margin-left:4px">estimé</span>`
+      :`<span style="font-size:.6rem;color:var(--green);background:rgba(46,200,130,.1);padding:1px 5px;border-radius:3px;margin-left:4px">documenté</span>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <div style="font-family:DM Mono,monospace;font-size:.71rem;color:var(--txt3);min-width:80px">${fd(x.date)}</div>
+      <div style="flex:1;font-size:.73rem;color:var(--txt2)">T${Math.ceil(new Date(x.date).getMonth()/3+.1)} ${new Date(x.date).getFullYear()}${estBadge}</div>
+      <div style="font-family:Syne,sans-serif;font-weight:600;font-size:.85rem;color:var(--red);min-width:80px;text-align:right">${eur(x.montant,2)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="card" style="margin-top:0">
+    <div class="card-title">Intérêts prélevés — Crédit N°5033576
+      <span class="card-title-link" style="font-size:.68rem;color:var(--txt3);cursor:default">T1 2022 → T1 2026</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div><div class="kpi-label" style="font-size:.62rem">Documentés (T1 2022–T1 2024)</div>
+        <div style="font-family:Syne,sans-serif;font-size:1rem;font-weight:700;color:var(--red)">${eur(totDoc)}</div></div>
+      <div><div class="kpi-label" style="font-size:.62rem">Estimés (T2 2024–T1 2026)</div>
+        <div style="font-family:Syne,sans-serif;font-size:1rem;font-weight:700;color:var(--orange)">${eur(totEst)}</div></div>
+      <div><div class="kpi-label" style="font-size:.62rem">Total cumulé</div>
+        <div style="font-family:Syne,sans-serif;font-size:1rem;font-weight:700;color:var(--txt)">${eur(totAll)}</div></div>
+    </div>
+    <div style="max-height:340px;overflow-y:auto">${rows}</div>
+    <div style="margin-top:8px;font-size:.68rem;color:var(--txt3);line-height:1.6">
+      Taux contractuel : Euribor 3M + spread 0,80%. Les trimestres estimés utilisent l'ESTER historique et le solde moyen de la periode. Taux contractuel confirme : ESTER + 0,80% (convention UBS Ref. 5978).
+      Les trimestres documentés proviennent du relevé UBS remis par Guillaume Menneguin (mai 2024).
+    </div>
+  </div>`;
+}
 
 // ═══════════════════════════════════════════════════════
 // PERFORMANCE ANALYSIS
@@ -1940,7 +2006,7 @@ const EURIBOR_H=[
   {d:'2024-06-30',r:.0370},{d:'2024-12-31',r:.0290},{d:'2025-06-30',r:.0245},
   {d:'2026-02-16',r:.0245}
 ];
-const SPREAD=0.005;
+const SPREAD=0.008; // Confirmé : ESTER + 0,8% (convention UBS Réf. 5978 + avenant 18/07/2022)
 let _perfScope='ubs'; // 'ubs' | 'ubs_fantom'
 
 function getEuribor(ds){
@@ -2242,7 +2308,7 @@ function renderPerf(){
         <div class="tri-item">
           <label>Coût Lombard actuel</label>
           <div class="val" style="color:var(--red)">${coutActuel.toFixed(2).replace('.',',')} %/an</div>
-          <small style="font-size:.63rem;color:var(--txt3)">Euribor ${(euriborActuel*100).toFixed(2)}% + spread 0,50%</small>
+          <small style="font-size:.63rem;color:var(--txt3)">Euribor ${(euriborActuel*100).toFixed(2)}% + spread 0,80%</small>
         </div>
         <div class="tri-item">
           <label>Rendement net Lombard</label>
@@ -2265,7 +2331,7 @@ function renderPerf(){
         </tbody>
       </table>
       <div style="margin-top:10px;padding:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.6">
-        ℹ Perf. AV UBS corrigée des rachats estimés (${eur(rachats)}). Coût Lombard = Euribor 3M BCE + spread 0,50% estimé (à confirmer avec le contrat). Le scope UBS+FANTOM est calculé depuis l'ouverture de FANTOM (oct. 2021) par interpolation linéaire des snapshots UBS.
+        ℹ Perf. AV UBS corrigée des rachats estimés (${eur(rachats)}). Coût Lombard = Euribor 3M BCE + spread 0,80% estimé (à confirmer avec le contrat). Le scope UBS+FANTOM est calculé depuis l'ouverture de FANTOM (oct. 2021) par interpolation linéaire des snapshots UBS.
       </div>
     </div>`;
 }
@@ -2478,7 +2544,7 @@ function renderRendement(){
     +'<small id="perf-rbrut-note" style="font-size:.63rem;color:var(--txt3)">AV UBS seule (corrigée rachats)</small></div>'
     +'<div class="tri-item"><label>Coût Lombard actuel</label>'
     +'<div class="val" style="color:var(--red)">'+coutActuel.toFixed(2).replace('.',',')+'&nbsp;%/an</div>'
-    +'<small style="font-size:.63rem;color:var(--txt3)">Euribor '+(euriborActuel*100).toFixed(2)+'% + spread 0,50%</small></div>'
+    +'<small style="font-size:.63rem;color:var(--txt3)">Euribor '+(euriborActuel*100).toFixed(2)+'% + spread 0,80%</small></div>'
     +'<div class="tri-item"><label>Rendement net Lombard</label>'
     +'<div class="val" id="perf-rnet" style="color:'+rNcol+'">'+rNstr+'</div>'
     +'<small style="font-size:.63rem;color:var(--txt3)">Différentiel rendement &minus; coût</small></div>'
@@ -2490,7 +2556,7 @@ function renderRendement(){
     +'<th class="num">Coût Lombard</th><th class="num">Différentiel</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'<div style="margin-top:10px;padding:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.6">'
-    +'ℹ Rendement AV UBS corrigé des rachats ('+eur(rachats)+'). Coût Lombard = Euribor 3M + spread 0,50% estimé. Composite UBS+FANTOM : TWRR correct par jalons, pondération géométrique.'
+    +'ℹ Rendement AV UBS corrigé des rachats ('+eur(rachats)+'). Coût Lombard = Euribor 3M + spread 0,80% estimé. Composite UBS+FANTOM : TWRR correct par jalons, pondération géométrique.'
     +'</div></div>'
     // ── Bloc 2 : Mandat UBS ──
     +renderMandatSection();
@@ -2727,7 +2793,7 @@ function renderStrategie(){
   // ── Calcul allocation ACTUELLE (dynamique sur valeurs réelles)
   const mandatUBS = 582292; // à affiner avec reporting UBS
   const etfLiquide = valEnv('pea_fortuneo') + valEnv('av_finary') + mandatUBS;
-  const fondsEuros = 18776 + 12950 + 10058; // FANTOM fonds euros + AV UBS fonds euros + BNP fonds euros
+  const fondsEuros = 18776 + 12950 + 10059; // FANTOM fonds euros + AV UBS fonds euros + BNP fonds euros (10 058,97 EUR confirme situ 08/04/2026)
   const stTaux = 113992+100400+96186+63104+60487; // structurés taux EN COURS
   const stAuto = stVal - stTaux; // structurés autocall EN COURS (approximation)
   const pe = D.pe.valorisations[0] ? D.pe.valorisations[0].actif_net : 109950;
@@ -2790,7 +2856,7 @@ function renderStrategie(){
   // ── ScoreCards dynamiques
   const scoreCards=[
     {titre:'LTV Lombard',val:pct(ltvV),col:ltvV>=0.65?'danger':ltvV>=0.55?'warn':'ok',
-      msg:'LTV '+pct(ltvV)+' — buffer '+eur(ltvCollatéral()*0.65-soldeLombard())+' avant seuil alerte 65%. Coût Lombard ~2,95%/an (Euribor 2,45% + spread 0,50%). Rendement composite 2,68%/an → différentiel légèrement négatif sur période complète, positif depuis fin 2024.'},
+      msg:'LTV '+pct(ltvV)+' — buffer '+eur(ltvCollatéral()*0.65-soldeLombard())+' avant seuil alerte 65%. Coût Lombard ~2,95%/an (Euribor 2,45% + spread 0,80%). Rendement composite 2,68%/an → différentiel légèrement négatif sur période complète, positif depuis fin 2024.'},
     {titre:'Concentration Oil & Gas',val:'3 structurés actifs',col:'warn',
       msg:"Alizé x2 + Atlas Oil&Gas — même secteur sur trois produits. Ne pas renouveler au remboursement. Prochain autocall potentiel Alizé O2 Oil&Gas dès oct. 2026."},
     {titre:'Mandat UBS — boîte noire',val:eur(mandatUBS),col:'warn',
@@ -3230,7 +3296,7 @@ function _buildPDF(){
     [{l:'AV UBS seule (corrigée 6 rachats documentés)',r:rU},
      {l:'AV UBS + AV FANTOM (composite pondéré)',r:co.composite},
      {l:'Mandat UBS isolé (jalons AEP confirmés)',r:tw.twrr},
-     {l:'Coût Lombard actuel (Euribor 3M + spread 0,50%)',r:cL,lombard:true}
+     {l:'Coût Lombard actuel (Euribor 3M + spread 0,80%)',r:cL,lombard:true}
     ].forEach(function(row,i){
       var vsL=!row.lombard?row.r-cL:null;
       trow(cp,[
@@ -3273,17 +3339,24 @@ function _buildPDF(){
     // Intérêts sur même page si la place le permet
     chk(6);y+=3;
     doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(TXT[0],TXT[1],TXT[2]);
-    doc.text('Intérêts prélevés N°5033576 (T1 2022 - T1 2024 documentés) :',ML,y);y+=5;
-    var ci=[{t:'Trimestre',w:30},{t:'Intérêts',w:30,r:true},{t:'',w:118}];
+    doc.text('Interets preleves N.5033576 (T1 2022 - T1 2026) :',ML,y);y+=5;
+    var ci=[{t:'Trimestre',w:32},{t:'Montant',w:32,r:true},{t:'Source',w:20,r:true},{t:'',w:94}];
     thd(ci);
-    var its=[{d:'31/03/2022',m:108.75},{d:'30/06/2022',m:379.42},{d:'30/09/2022',m:701.62},
-             {d:'31/12/2022',m:3302.89},{d:'31/03/2023',m:6280.80},{d:'30/06/2023',m:7465.77},
-             {d:'30/09/2023',m:8655.78},{d:'31/12/2023',m:9146.97},{d:'31/03/2024',m:9441.46}];
-    var totI=its.reduce(function(a,x){return a+x.m;},0);
-    its.forEach(function(x,i){trow(ci,[{t:x.d,c:SUB},{t:fm2(x.m),c:RED,r:true},{t:'',c:SUB}],i%2===0);});
-    ttotal(ci,[{t:'TOTAL T1 2022 - T1 2024',c:GOLD},{t:fm2(totI),c:RED,r:true},{t:'',c:GOLD}]);
+    var its=L.interets||[];
+    var totDocI=its.filter(function(x){return x.src==='doc';}).reduce(function(a,x){return a+x.montant;},0);
+    var totEstI=its.filter(function(x){return x.src==='est';}).reduce(function(a,x){return a+x.montant;},0);
+    var totI=totDocI+totEstI;
+    its.forEach(function(x,i){
+      trow(ci,[
+        {t:fd(x.date),c:SUB},
+        {t:fm2(x.montant),c:RED,r:true},
+        {t:x.src==='doc'?'doc.':'estim.',c:x.src==='doc'?GRN:GOLD,r:true},
+        {t:'',c:SUB}
+      ],i%2===0);
+    });
+    ttotal(ci,[{t:'TOTAL T1 2022 - T1 2026',c:GOLD},{t:fm2(totI),c:RED,r:true},{t:'',c:GOLD},{t:'doc. '+fm2(totDocI)+' / est. '+fm2(totEstI),c:SUB}]);
     y+=3;
-    note('Taux contractuel : Euribor 3M + spread 0,50%   -   Plafond ligne : '+fm0(L.plafond_actuel));
+    note('T1 2022-T1 2024 documentes (relevé UBS). T2 2024-T1 2026 estimes sur Euribor 3M historique + spread 0,80%. Plafond : '+fm0(L.plafond_actuel)+'.');
 
     // ══════════════ PAGE 4  -  PRODUITS STRUCTURÉS ══════════════
     newPage('PARTIE I  -  REPORTING CHIFFRÉ');
