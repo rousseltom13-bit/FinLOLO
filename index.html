@@ -3175,7 +3175,7 @@ function _buildPDF(){
     }
 
     function para(title,text){
-      chk(14);y+=2;
+      chk(14);y+=4;
       doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(TXT[0],TXT[1],TXT[2]);
       doc.text(title,ML,y);y+=6;
       doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(SUB[0],SUB[1],SUB[2]);
@@ -3183,13 +3183,13 @@ function _buildPDF(){
       lines.forEach(function(l){
         chk(5);
         doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(SUB[0],SUB[1],SUB[2]);
-        doc.text(l,ML,y);y+=4.5;
+        doc.text(l,ML,y);y+=5;
       });
       y+=3;
     }
 
     function blt(ico,title,text,col){
-      chk(18);y+=2;
+      chk(18);y+=4;
       doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(col[0],col[1],col[2]);
       doc.text(ico+' '+title,ML,y);y+=6;
       doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(SUB[0],SUB[1],SUB[2]);
@@ -3197,9 +3197,9 @@ function _buildPDF(){
       lines.forEach(function(l){
         chk(5);
         doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(SUB[0],SUB[1],SUB[2]);
-        doc.text(l,ML+4,y);y+=4.5;
+        doc.text(l,ML+4,y);y+=5;
       });
-      y+=2;
+      y+=3;
     }
 
     function partieHeader(num,title){
@@ -3250,7 +3250,6 @@ function _buildPDF(){
 
     // ══════════════ PAGE 2  -  BILAN ══════════════
     newPage('PARTIE I  -  REPORTING CHIFFRÉ');
-    partieHeader('PARTIE I','REPORTING CHIFFRÉ');
 
     secBar('1. Bilan patrimonial synthétique');
     var pt=ptotal(),pn=pnet(),sol=soldeLombard(),lv=ltv();
@@ -3265,7 +3264,7 @@ function _buildPDF(){
     var cb=[{t:'Enveloppe',w:44},{t:'Valeur',w:28,r:true},{t:'PRU',w:26,r:true},{t:'P&L brut',w:28,r:true},{t:'%',w:16,r:true},{t:'Periode',w:36,r:true}];
     thd(cb);
     var periodes={av_ubs:'sept.21 -> avr.26',av_cnp_fantom:'oct.21 -> avr.26',
-      pea_fortuneo:'avr.25 -> avr.26',av_bnp:'avr.25 -> avr.25',
+      pea_fortuneo:'avr.25 -> avr.26',av_bnp:'avr.25 -> avr.26',
       av_finary:'avr.25 -> avr.26',pe_global_strategies:'figée 06/23'};
     D.enveloppes.forEach(function(e,i){
       var val=valEnv(e.id),pru=e.pru||0,rch=e.rachats_documentes||0;
@@ -3280,8 +3279,7 @@ function _buildPDF(){
       ],i%2===0);
     });
     ttotal(cb,[{t:'TOTAL BRUT',c:GOLD},{t:fm0(pt),c:GOLD,r:true},{t:'',c:GOLD},{t:'',c:GOLD},{t:'',c:GOLD},{t:'',c:GOLD}]);
-    y+=3;
-    note('P&L brut = (valeur actuelle + rachats réalisés - PRU). Inclut intérêts, coupons et plus-values latentes. Non annualisé.');
+    y+=5;
 
     // ══════════════ PAGE 3  -  PERF + LOMBARD ══════════════
     newPage('PARTIE I  -  REPORTING CHIFFRÉ');
@@ -3296,7 +3294,7 @@ function _buildPDF(){
     [{l:'AV UBS seule (corrigée 6 rachats documentés)',r:rU},
      {l:'AV UBS + AV FANTOM (composite pondéré)',r:co.composite},
      {l:'Mandat UBS isolé (jalons AEP confirmés)',r:tw.twrr},
-     {l:'Coût Lombard actuel (Euribor 3M + spread 0,80%)',r:cL,lombard:true}
+     {l:'Coût Lombard actuel (ESTER + spread 0,80%)',r:cL,lombard:true}
     ].forEach(function(row,i){
       var vsL=!row.lombard?row.r-cL:null;
       trow(cp,[
@@ -3305,8 +3303,7 @@ function _buildPDF(){
         {t:vsL!=null?(vsL>=0?'+':'')+(vsL*100).toFixed(2)+' pp':' - ',c:vsL!=null?vsL>=0?GRN:RED:SUB,r:true}
       ],i%2===0);
     });
-    note('Période de référence : sept. 2021 -> avr. 2026 (4,6 ans) pour l\'AV UBS et le Mandat. Le benchmark adapté au mandat équilibré est un indice mixte 50/50 actions/obligations, pas un ETF 100% actions.');
-    y+=2;
+    y+=8;
 
     // 3. Lombard
     secBar('3. Crédit Lombard N°5033576');
@@ -3355,8 +3352,7 @@ function _buildPDF(){
       ],i%2===0);
     });
     ttotal(ci,[{t:'TOTAL T1 2022 - T1 2026',c:GOLD},{t:fm2(totI),c:RED,r:true},{t:'',c:GOLD},{t:'doc. '+fm2(totDocI)+' / est. '+fm2(totEstI),c:SUB}]);
-    y+=3;
-    note('T1 2022-T1 2024 documentes (relevé UBS). T2 2024-T1 2026 estimes sur Euribor 3M historique + spread 0,80%. Plafond : '+fm0(L.plafond_actuel)+'.');
+    y+=8;
 
     // ══════════════ PAGE 4  -  PRODUITS STRUCTURÉS ══════════════
     newPage('PARTIE I  -  REPORTING CHIFFRÉ');
@@ -3370,8 +3366,9 @@ function _buildPDF(){
     function psTable(label,lst,isin_col){
       if(!lst.length)return;
       chk(8);
+      y+=6;
       doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
-      doc.text(label,ML,y);y+=4;
+      doc.text(label,ML,y);y+=5;
       var cs=[{t:'Produit',w:72},{t:'Investi',w:26,r:true},{t:'Valeur',w:26,r:true},{t:'P&L',w:24,r:true},{t:'Échéance',w:30,r:true}];
       thd(cs);
       var sI=0,sV=0;
@@ -3397,7 +3394,7 @@ function _buildPDF(){
     // Structurés remboursés / échus
     var stRmb=D.structures.filter(function(s){return s.statut!=='EN COURS';});
     if(stRmb.length){
-      chk(10);y+=3;
+      chk(10);y+=10;
       secBar('Produits structurés remboursés / échus');
       var psRmbUBS=stRmb.filter(function(s){return s.env==='av_ubs';});
       var psRmbFTM=stRmb.filter(function(s){return s.env==='av_cnp_fantom';});
@@ -3405,8 +3402,9 @@ function _buildPDF(){
       function psRmbTable(label,lst){
         if(!lst.length)return;
         chk(8);
+        y+=6;
         doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(GOLD[0],GOLD[1],GOLD[2]);
-        doc.text(label,ML,y);y+=4;
+        doc.text(label,ML,y);y+=5;
         var cr=[{t:'Produit',w:90},{t:'Investi',w:30,r:true},{t:'P&L réalisé',w:30,r:true},{t:'Statut',w:28,r:true}];
         thd(cr);
         var sI=0,sP=0;
@@ -3443,16 +3441,13 @@ function _buildPDF(){
       ],i%2===0);
     });
     ttotal(cf,[{t:'TOTAL',c:GOLD},{t:'',c:GOLD},{t:'',c:GOLD},{t:'',c:GOLD},{t:fm0(tF),c:GOLD,r:true},{t:'',c:GOLD}]);
-    y+=4;
-    note('Frais de gestion AV : 0,60%/an estimé (base valeur fin de période). Frais mandat UBS : 0,50%/an estimé. Prélèvements sociaux 2021 documentés par l\'AEP. Les autres années sont estimées  -  à demander confirmation MIF II annuel.');
+    y+=8;
 
     // ══════════════ PAGE 6  -  PARTIE II ══════════════
     newPage('PARTIE II  -  RAPPORT DE SITUATION');
-    partieHeader('PARTIE II','RAPPORT DE SITUATION');
 
     // 6. Analyse
     secBar('6. Analyse de la situation patrimoniale');
-
     var stEc2=D.structures.filter(function(s){return s.statut==='EN COURS';});
     var stRmb2=D.structures.filter(function(s){return s.statut!=='EN COURS';});
     var tI=stEc2.reduce(function(a,s){return a+(s.investi||0);},0);
@@ -3465,7 +3460,7 @@ function _buildPDF(){
       'Le patrimoine brut s\'élève à '+fm0(pt)+' au 05/04/2026, réparti entre l\'AV UBS (59%), l\'AV FANTOM (25%) et d\'autres enveloppes (16%). Après déduction du crédit Lombard ('+fm0(sol)+'), le patrimoine net ressort à '+fm0(pn)+'.');
 
     para('Performance',
-      'Le TWRR de l\'AV UBS s\'établit à +2,92%/an depuis septembre 2021, pénalisé par (1) le profil équilibré du mandat intégrant des obligations et des structurés à faible rendement courant, et (2) la baisse de 2022 non entièrement rattrapée. Le mandat UBS isolé affiche seulement +0,92%/an, soit une sous-performance substantielle même par rapport au coût du Lombard (2,95%/an).');
+      'Le TWRR de l\'AV UBS s\'établit à +2,92%/an depuis septembre 2021, pénalisé par (1) le profil équilibré du mandat intégrant des obligations et des structurés à faible rendement courant, et (2) la baisse de 2022 non entièrement rattrapée. Le mandat UBS isolé affiche seulement +0,92%/an, soit une sous-performance substantielle même par rapport au coût du Lombard (ESTER 2,45% + 0,80% = 3,25%/an).');
 
     para('Produits structurés',
       stEc2.length+' produits en cours pour '+fm0(tI)+' investis, valorisés '+fm0(tV)+' (P&L latent '+(tV-tI>=0?'+':'')+fm0(Math.round(tV-tI))+'). '
@@ -3476,7 +3471,7 @@ function _buildPDF(){
     secBar('7. Points d\'attention');
 
     blt('(!)','Sous-performance du mandat UBS',
-      'Le mandat UBS géré discrétionnairement (+0,92%/an) sous-performe le coût du Lombard (+2,95%/an) sur la période. La gestion active ne génère pas de valeur visible sur 4,6 ans. Point à aborder explicitement avec le CGP : benchmark officiel du mandat, composition cible, et alternative ETF pour la poche dynamique.',RED);
+      'Le mandat UBS géré discrétionnairement (+0,92%/an) sous-performe le coût du Lombard (ESTER 2,45% + 0,80% = 3,25%/an) sur la période. La gestion active ne génère pas de valeur visible sur 4,6 ans. Point à aborder explicitement avec le CGP : benchmark officiel du mandat, composition cible, et alternative ETF pour la poche dynamique.',RED);
 
     blt('(!)','Surpondération en produits structurés et concentration Oil & Gas',
       'Les structurés représentent environ 35% du patrimoine brut, contre une cible raisonnable de 20-25%. Exposition historique marquée au secteur Oil & Gas (Alizé 5A x2, Climber Oil&Gas  -  certains remboursés). Lors des prochains remboursements autocall, privilégier des indices larges (Eurostoxx 50, MSCI World) et réduire la part des structurés au profit d\'ETF dans l\'AV UBS.',RED);
@@ -3508,9 +3503,9 @@ function _buildPDF(){
         'Réévaluer la structure globale après liquidation partielle du Lombard'
       ]}
     ].forEach(function(e){
-      chk(18);
+      chk(18);y+=2;
       doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(TXT[0],TXT[1],TXT[2]);
-      doc.text(e.d,ML,y);y+=5;
+      doc.text(e.d,ML,y);y+=6;
       e.items.forEach(function(item){
         chk(6);
         doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(SUB[0],SUB[1],SUB[2]);
@@ -3518,10 +3513,10 @@ function _buildPDF(){
         lines.forEach(function(l){
           chk(5);
           doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(SUB[0],SUB[1],SUB[2]);
-          doc.text(l,ML+4,y);y+=4.5;
+          doc.text(l,ML+4,y);y+=5;
         });
       });
-      y+=4;
+      y+=6;
     });
 
     // ══════════════ PAGE 7  -  GRAPHIQUE ALLOCATION ══════════════
