@@ -436,8 +436,8 @@ const D = {
     {id:"av_finary",nom:"Finary Life",court:"Finary Life",type:"assurance_vie",assureur:"Finary",courtier:"Finary",nanti:false,demembre:false,couleur:"#F59340",icone:"🌱",
       pru:3285},
     {id:"pe_global_strategies",nom:"Global Strategies 2021 SLP",court:"PE Global Strategies",type:"pe_fonds",gestionnaire:"Equitis Gestion",depositaire:"Société Générale",isin:"FR0014001X77",souscription:"2021-03-24",nanti:false,demembre:false,couleur:"#F97316",icone:"🏗️",
-      pru:null, // PRU non pertinent pour PE — utiliser MOIC/TRI à la place
-      pe_note:"Valorisation figée au 30/06/2023. MOIC et TRI calculés sur flux datés."}
+      pru:129000, // Total appelé confirmé Capital Account 31/12/2025
+      pe_note:"Valorisation confirmée au 31/12/2025 : 139 662€. TVPI 1,22x / IRR 6,0%/an (Capital Account IQ-EQ). Engagement résiduel : 21 000€ (14%)."}
   ],
 
   snapshots:[
@@ -484,7 +484,7 @@ const D = {
     {date:"2025-09-30",env:"av_ubs",val:1120147},
     {date:"2025-10-31",env:"av_ubs",val:1133397},
     {date:"2025-11-30",env:"av_ubs",val:1130821},
-    {date:"2025-12-31",env:"av_ubs",val:1134654},
+    {date:"2025-12-31",env:"av_ubs",val:1134772}, // AEP Information Annuelle 2025 — confirmé
     {date:"2026-01-31",env:"av_ubs",val:1148177},
     {date:"2026-02-28",env:"av_ubs",val:1104871},
     {date:"2026-03-31",env:"av_ubs",val:1064136},
@@ -539,7 +539,8 @@ const D = {
     {date:"2026-04-08",env:"av_bnp",val:164137},
     {date:"2025-04-01",env:"av_finary",val:3439},
     {date:"2026-04-05",env:"av_finary",val:3430},
-    {date:"2023-06-30",env:"pe_global_strategies",val:109950}
+    {date:"2023-06-30",env:"pe_global_strategies",val:109950},
+    {date:"2025-12-31",env:"pe_global_strategies",val:139662} // Capital Account IQ-EQ 31/12/2025
   ],
 
   // MSCI World base 100 = déc 2021 — source justETF IE00B4L5Y983
@@ -568,11 +569,11 @@ const D = {
   positions:[
     {env:"av_ubs",poche:"Libre UBS",support:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",cat:"structuré",val:100400,pru:100834},
     // Alizé 5 Ans Oil & Gas 2025 (FR001400X870) — REMBOURSÉ le 02/04/2026 à 109% — position supprimée de D.positions
-    {env:"av_ubs",poche:"Libre UBS",support:"FCPR Eurazeo Strategic Opportunities 3 D",isin:"FR001400B3M1",cat:"pe",val:79774,pru:null},
-    {env:"av_ubs",poche:"Libre UBS",support:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",cat:"structuré",val:113992,pru:100000},
-    {env:"av_ubs",poche:"Libre UBS",support:"Fonds Général AEP",isin:null,cat:"fonds_euros",val:114004,pru:null},
-    {env:"av_ubs",poche:"Libre UBS",support:"BNP Paribas Mois ISR I Capitalisation",isin:"FR0007009808",cat:"monétaire",val:12950,pru:null},
-    {env:"av_ubs",poche:"Mandat UBS",support:"Mandat UBS (55 lignes — valorisation globale)",isin:null,cat:"mandat",val:582292,pru:null},
+    {env:"av_ubs",poche:"Libre UBS",support:"FCPR Eurazeo Strategic Opportunities 3 D",isin:"FR001400B3M1",cat:"pe",val:52627,pru:null}, // AEP 31/12/2025 : 127,29€/UC × 412,65 parts
+    {env:"av_ubs",poche:"Libre UBS",support:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",cat:"structuré",val:115537,pru:100000}, // AEP 31/12/2025 : 116,77€/UC × 989,44 parts
+    {env:"av_ubs",poche:"Libre UBS",support:"Fonds Général AEP",isin:null,cat:"fonds_euros",val:46230,pru:null}, // AEP 31/12/2025 : 4,07% répartition — taux net 2,96%/an, intérêts 2025 : 2 112,60€
+    {env:"av_ubs",poche:"Libre UBS",support:"BNP Paribas Mois ISR I Capitalisation",isin:"FR0007009808",cat:"monétaire",val:126774,pru:null}, // AEP 31/12/2025 : 25 049€/UC × 5,06 parts
+    {env:"av_ubs",poche:"Mandat UBS",support:"Mandat UBS (55 lignes — valorisation globale)",isin:null,cat:"mandat",val:608885,pru:null}, // AEP 31/12/2025 — val au 05/04/2026 : 582 292€
     {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A European Industrials 2026",isin:"FR0014015J79",cat:"structuré",val:100000,pru:100000},
     {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Atlas 10 Ans CMS EUR 10Y 25",isin:"FR0014010A73",cat:"structuré",val:96186,pru:99960},
     {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",cat:"structuré",val:53773,pru:50000},
@@ -596,7 +597,7 @@ const D = {
     {env:"av_bnp",poche:"UC",support:"Autres UC BNP",isin:null,cat:"fonds",val:93414,pru:64000},
     // Finary Life — IMG_0548 (05/04/2026)
     {env:"av_finary",poche:"UC",support:"iShares Growth Portfolio UCITS ETF Euro Acc",isin:"IE00BLLZQ805",cat:"etf",val:3430,pru:3286,qty:463.39,pru_unit:7.09,px:7.40},
-    {env:"pe_global_strategies",poche:"Parts A",support:"Global Strategies 2021 SLP — Parts A",isin:"FR0014001X77",cat:"pe",val:109950,pru:129000}
+    {env:"pe_global_strategies",poche:"Parts A",support:"Global Strategies 2021 SLP — Parts A",isin:"FR0014001X77",cat:"pe",val:139662,pru:129000} // AEP Capital Account 31/12/2025 — 93,10€/part × 1500
   ],
 
   // STRUCTURÉS — données enrichies avec dates de constatation issues des KIDs
@@ -614,14 +615,14 @@ const D = {
       note:"Capital garanti à l'échéance 02/08/2034. Perte possible avant échéance."},
     {id:"st002",env:"av_ubs",nom:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",type:"autocall",sous_jacent:"STOXX Europe 600 Oil & Gas",emetteur:"UBS",
       souscription:"2025-03-26",echeance:"2030-03-26",sortie:"2026-04-02",
-      investi:40303,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:3627,
+      investi:43905,statut:"REMBOURSÉ",val:null,pnl_latent:null,pnl_realise:3949, // AEP 31/12/2025 : 43 905€ → remb. 109% = 47 854€ → P&L +3 949€
       taux_sortie:0.09,conditions:{barriere_capital:0.70,coupon_taux:0.09},
       dates_constatation:[],coupons:[],
       motif:"Remboursement anticipé à 109% — STOXX Oil&Gas à 144,09% le 26/03/2026",
       note:"Source: Notification UBS 26/03/2026. Niveau initial 375,19 → clôture 540,63 (+44%). Remb. 109% payé le 02/04/2026. TRI: ~8,8%/an.",
       capital_garanti_echeance:false},
     {id:"st003",env:"av_ubs",nom:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",type:"taux",sous_jacent:"Obligations crédit euro IG/HY",emetteur:"La Maison de Gestion",
-      souscription:"2023-02-21",echeance:"2027-01-01",investi:100000,statut:"EN COURS",val:113992,pnl_latent:13992,pnl_realise:null,
+      souscription:"2023-02-21",echeance:"2027-01-01",investi:100000,statut:"EN COURS",val:115537,pnl_latent:15537,pnl_realise:null,
       capital_garanti_echeance:false,dates_constatation:[],coupons:[],conditions:{},taux_sortie:null,
       note:"Obligation structurée taux flottant → fixe. Pas d'autocall."},
     {id:"st004",env:"av_ubs",nom:"Climber 8 Ans Panier Luxe 2026",isin:"FR0014015K43",type:"autocall",sous_jacent:"LVMH / Richemont / Kering / Hermès (panier équipondéré)",emetteur:"CIC Market Solutions",
@@ -707,17 +708,28 @@ const D = {
 
   pe:{
     engagement:150000,parts:1500,
+    // Appels confirmés — Capital Account IQ-EQ au 31/12/2025. Total appelé : 129 000€ (86%). Résiduel : 21 000€.
     appels:[
-      {n:0,date:"2021-03-24",montant:45000},{n:1,date:"2021-04-13",montant:15000},
-      {n:2,date:"2021-11-15",montant:7500},{n:3,date:"2022-04-14",montant:5250},
-      {n:4,date:"2022-07-21",montant:5250},{n:5,date:"2022-09-20",montant:3000},
-      {n:6,date:"2023-03-07",montant:10500},{n:7,date:"2023-06-20",montant:4500},
-      {n:8,date:"2023-09-20",montant:9750},{n:9,date:"2024-03-26",montant:4500},
-      {n:10,date:"2024-06-13",montant:4500},{n:11,date:"2025-11-01",montant:6750},
-      {n:12,date:null,montant:null},{n:13,date:null,montant:null}
+      {n:0, date:"2021-03-24",montant:45000,label:"Tranche Initiale"},
+      {n:1, date:"2021-04-13",montant:15000,label:"Tranche Différée 1"},
+      {n:2, date:"2021-11-15",montant:7500, label:"Tranche Différée 2"},
+      {n:3, date:"2022-04-14",montant:5250, label:"Tranche Différée 3"},
+      {n:4, date:"2022-07-21",montant:5250, label:"Tranche Différée 4"},
+      {n:5, date:"2022-09-20",montant:3000, label:"Tranche Différée 5"},
+      {n:6, date:"2023-03-07",montant:10500,label:"Tranche Différée 6"},
+      {n:7, date:"2023-06-20",montant:4500, label:"Tranche Différée 7"},
+      {n:8, date:"2023-09-20",montant:9750, label:"Tranche Différée 8"},
+      {n:9, date:"2024-03-26",montant:7500, label:"Tranche Différée 9"},
+      {n:10,date:"2024-06-13",montant:4500, label:"Tranche Différée 10"},
+      {n:11,date:"2025-10-06",montant:4500, label:"Tranche Différée 11"},
+      {n:12,date:"2025-12-05",montant:6750, label:"Tranche Différée 12"}
     ],
-    distributions:[{date:"2025-03-28",montant:18000}],
-    valorisations:[{date:"2023-06-30",actif_net:109950,appele_a_date:96000,pnl:13950}]
+    distributions:[{date:"2025-03-28",montant:18000,label:"Distribution n°01",note:"Remboursement nominal — 12€/part"}],
+    valorisations:[
+      {date:"2023-06-30",actif_net:109950,appele_a_date:96000,pnl:13950,note:"Ancienne VL figée (app)"},
+      {date:"2025-12-31",actif_net:139662,appele_a_date:129000,valeur_part:93.10,dpi:0.14,rvpi:1.08,tvpi:1.22,irr:0.06,
+       note:"Capital Account IQ-EQ 31/12/2025 — TVPI 1,22x, IRR 6,0%/an"}
+    ]
   },
 
   lombard:{
@@ -784,9 +796,16 @@ const D = {
 
   frais:[
     {annee:2021,adm:1198.75,mandat:538.83,ps:597.60,total:2874.01,src:"documenté"},
-    {annee:2022,adm:2425,mandat:3100,ps:null,total:5525,src:"reconstitué"},
-    {annee:2023,adm:2300,mandat:2950,ps:null,total:5250,src:"reconstitué"},
-    {annee:2024,adm:2450,mandat:2895,ps:null,total:5345,src:"reconstitué"}
+    {annee:2022,adm:2425,mandat:3100,ps:null,total:5525,src:"estimé"},
+    {annee:2023,adm:2300,mandat:2950,ps:null,total:5250,src:"estimé"},
+    {annee:2024,adm:2450,mandat:2895,ps:null,total:5345,src:"estimé"},
+    // 2025 — documenté par AEP Information Annuelle 2025 (reçue 04/04/2026)
+    // Frais gestion administrative totaux : 5 690,81€ (0,50% sur chaque support Libre UBS)
+    // Frais mandat UBS : 2 953,71€ (inclus dans le total ci-dessus)
+    // Prélèvements sociaux fonds euros (17,20%) : 333,92€
+    // Frais arbitrage : 70€
+    {annee:2025,adm:2737,mandat:2954,ps:334,total:6095,src:"documenté",
+     note:"AEP Info Annuelle 2025 — frais adm 5690,81€ dont mandat 2953,71€ + PS FE 333,92€ + arbitrage 70€"}
   ],
 
   // ──────────────────────────────────────────────────────
@@ -822,6 +841,7 @@ const D = {
       {date:"2024-03-31", val:563857,  src:"AEP Q1 2024"},
       {date:"2025-03-31", val:575782,  src:"AEP Q1 2025"},
       {date:"2025-06-30", val:582291,  src:"AEP Q2 2025"},
+      {date:"2025-12-31", val:608885,  src:"AEP Information Annuelle 2025 (reçue 04/04/2026)"},
       {date:"2026-04-05", val:582292,  src:"Relevé UBS 05/04/2026 (confirmé)"}
     ],
 
@@ -2793,8 +2813,8 @@ function renderStrategie(){
   // ── Calcul allocation ACTUELLE (dynamique sur valeurs réelles)
   const mandatUBS = 582292; // à affiner avec reporting UBS
   const etfLiquide = valEnv('pea_fortuneo') + valEnv('av_finary') + mandatUBS;
-  const fondsEuros = 18776 + 12950 + 10059; // FANTOM fonds euros + AV UBS fonds euros + BNP fonds euros (10 058,97 EUR confirme situ 08/04/2026)
-  const stTaux = 113992+100400+96186+63104+60487; // structurés taux EN COURS
+  const fondsEuros = 18776 + 46230 + 10059; // FANTOM FE + AV UBS Fonds Général AEP 31/12/2025 + BNP FE
+  const stTaux = 115537+100400+96186+63104+60487; // structurés taux EN COURS (LMDG mis à jour AEP 31/12/2025)
   const stAuto = stVal - stTaux; // structurés autocall EN COURS (approximation)
   const pe = D.pe.valorisations[0] ? D.pe.valorisations[0].actif_net : 109950;
 
@@ -3525,12 +3545,12 @@ function _buildPDF(){
     y+=2;
 
     // Blocs tels que définis dans la section Stratégie de l'app
-    // fondsEuros = 18776 + 12950 + 10058 = 41784€
+    // fondsEuros = 18776 + 46230 + 10059 = 75065€ (AEP 31/12/2025)
     // etfLiquide = mandat 582292 + PEA 23755 + Finary 3430 = 609477€
     // stVal = structurés en cours valorisés = 762075€
     // pe = 109950€  |  pt = 1806374€
     var pt_=ptotal();
-    var fondsEurosVal=18776+12950+10058; // FANTOM FE + AV UBS FE + BNP FE (hardcodé comme dans l'app)
+    var fondsEurosVal=18776+46230+10059; // FANTOM FE + AV UBS Fonds Général AEP 31/12/2025 + BNP FE
     var etfVal=calcTWRRMandat().valFinale+(valEnv('pea_fortuneo')||0)+(valEnv('av_finary')||0);
     var stVal_=D.structures.filter(function(s){return s.statut==='EN COURS';}).reduce(function(a,s){return a+(s.val||0);},0);
     var peVal=valEnv('pe_global_strategies')||0;
