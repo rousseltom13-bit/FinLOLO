@@ -1073,7 +1073,7 @@ function renderDashboard(){
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
       <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Engagement</div><div style="font-family:Syne,sans-serif;font-weight:700">${eur(pe.engagement)}</div></div>
       <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Appelé</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--blue)">${eur(appele)}</div></div>
-      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Actif net</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--green)">${eur(pe.valorisations[0].actif_net)}</div></div>
+      <div><div class="kpi-label" style="font-size:.63rem;margin-bottom:2px">Actif net</div><div style="font-family:Syne,sans-serif;font-weight:700;color:var(--green)">${eur(pe.valorisations[pe.valorisations.length-1].actif_net)}</div></div>
     </div>
     <div class="prog-bar"><div class="prog-fill" style="width:${(appele/pe.engagement*100).toFixed(1)}%;background:var(--orange)"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:.69rem;color:var(--txt3);font-family:DM Mono,monospace;margin-top:3px"><span>${pct(appele/pe.engagement)} appelé</span><span>Reste ${eur(pe.engagement-appele)}</span></div>`;
@@ -2253,7 +2253,9 @@ function setPerfScope(scope){
     const rB=rendAnnualise('ubs'),rN=rendNetLombard('ubs');
     document.getElementById('perf-rbrut').innerHTML=(rB?(rB*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—');
     document.getElementById('perf-rbrut').style.color=rB>0.03?'var(--green)':'var(--orange)';
-    document.getElementById('perf-rbrut-note').textContent='AV UBS seule — corrigée rachats (sept. 2021 → juin 2025)';
+    var _lastUBSSnap=D.snapshots.filter(s=>s.env==='av_ubs').sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    var _lastUBSLabel=_lastUBSSnap?new Date(_lastUBSSnap.date).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'';
+    document.getElementById('perf-rbrut-note').textContent='AV UBS seule — corrigée 6 rachats (sept. 2021 → '+_lastUBSLabel+')';
     document.getElementById('perf-rnet').innerHTML=(rN!=null?(rN*100).toFixed(1).replace('.',',')+'&nbsp;%/an':'—');
     document.getElementById('perf-rnet').style.color=rN>0?'var(--green)':'var(--red)';
     document.getElementById('perf-scope-note').textContent='Historique complet depuis sept. 2021 — le plus fiable.';
@@ -2296,9 +2298,9 @@ function renderPerf(){
   const snapsUBS=getSnapsConsolides('ubs');
   const periods=[
     {y:'2021→2022',s1:'2021-12-31',s2:'2022-12-31'},
-    {y:'2022→2023',s1:'2022-12-31',s2:'2023-09-30'},
-    {y:'2023→2024',s1:'2023-09-30',s2:'2024-11-29'},
-    {y:'2024→2025',s1:'2024-11-29',s2:'2025-06-30'}
+    {y:'2022→2023',s1:'2022-12-31',s2:'2023-12-31'},
+    {y:'2023→2024',s1:'2023-12-31',s2:'2024-12-31'},
+    {y:'2024→2025',s1:'2024-12-31',s2:'2025-12-31'}
   ];
   const perfRows=periods.map(row=>{
     const s1=snapsUBS.find(s=>s.date===row.s1),s2=snapsUBS.find(s=>s.date===row.s2);
@@ -2328,7 +2330,7 @@ function renderPerf(){
         <div class="tri-item">
           <label>Coût Lombard actuel</label>
           <div class="val" style="color:var(--red)">${coutActuel.toFixed(2).replace('.',',')} %/an</div>
-          <small style="font-size:.63rem;color:var(--txt3)">Euribor ${(euriborActuel*100).toFixed(2)}% + spread 0,80%</small>
+          <small style="font-size:.63rem;color:var(--txt3)">ESTER ${(euriborActuel*100).toFixed(2)}% + spread 0,80%</small>
         </div>
         <div class="tri-item">
           <label>Rendement net Lombard</label>
@@ -2351,7 +2353,7 @@ function renderPerf(){
         </tbody>
       </table>
       <div style="margin-top:10px;padding:8px;background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);border-radius:5px;font-size:.7rem;color:var(--txt3);line-height:1.6">
-        ℹ Perf. AV UBS corrigée des rachats estimés (${eur(rachats)}). Coût Lombard = Euribor 3M BCE + spread 0,80% estimé (à confirmer avec le contrat). Le scope UBS+FANTOM est calculé depuis l'ouverture de FANTOM (oct. 2021) par interpolation linéaire des snapshots UBS.
+        ℹ Perf. AV UBS corrigée des rachats documentés (${eur(rachats)}). Coût Lombard = ESTER + spread 0,80% contractuel (Convention UBS Réf. 5978). Le scope UBS+FANTOM est calculé depuis l'ouverture de FANTOM (oct. 2021) par interpolation linéaire des snapshots UBS.
       </div>
     </div>`;
 }
@@ -2377,7 +2379,7 @@ function initPerfChart(scope){
     type:'line',
     data:{labels,datasets:[
       {label:scopeLabel,data:portfolioIdx,borderColor:scopeColor,borderWidth:2.5,backgroundColor:scopeColor+'15',fill:true,pointRadius:3,pointBackgroundColor:scopeColor,tension:0.4},
-      {label:'Coût Lombard (Euribor+0,75%)',data:lombCostIdx,borderColor:'#F06B6B',borderWidth:1.5,borderDash:[5,3],fill:false,pointRadius:0,tension:0.4},
+      {label:'Coût Lombard (ESTER+0,80%)',data:lombCostIdx,borderColor:'#F06B6B',borderWidth:1.5,borderDash:[5,3],fill:false,pointRadius:0,tension:0.4},
       {label:'Euribor 3M seul',data:euriborIdx,borderColor:'#F59340',borderWidth:1,borderDash:[2,4],fill:false,pointRadius:0,tension:0.4}
     ]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
@@ -2519,8 +2521,8 @@ function renderRendement(){
   const periods=[
     {y:'2021\u21922022',s1:'2021-12-31',s2:'2022-12-31'},
     {y:'2022\u21922023',s1:'2022-12-31',s2:'2023-09-30'},
-    {y:'2023\u21922024',s1:'2023-09-30',s2:'2024-11-29'},
-    {y:'2024\u21922025',s1:'2024-11-29',s2:'2025-06-30'}
+    {y:'2023\u21922024',s1:'2023-12-31',s2:'2024-12-31'},
+    {y:'2024\u21922025',s1:'2024-12-31',s2:'2025-12-31'}
   ];
 
   // Build table rows without any template literals
@@ -2651,7 +2653,7 @@ function renderMandatSection(){
     // En-tête
     +'<div class="card-title" style="margin-bottom:4px">'
     +'<span>⊕ Mandat UBS — Performance isolée</span>'
-    +'<span style="font-size:.71rem;font-weight:400;color:var(--txt3)">TWRR · sept. 2021 → avr. 2026</span>'
+    +(function(){var tw=calcTWRRMandat();var d1=tw?new Date(tw.dateDebut).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'sept. 2021';var d2=tw?new Date(tw.dateFin).toLocaleDateString('fr-FR',{month:'short',year:'numeric'}):'?';return '<span style="font-size:.71rem;font-weight:400;color:var(--txt3)">TWRR · '+d1+' → '+d2+'</span>';})()
     +'</div>'
     +'<div style="font-size:.71rem;color:var(--txt3);margin-bottom:14px;font-family:\'DM Mono\',monospace">'
     +'Gestion active 55 lignes — frais 1,00%/an (0,50% mandat + 0,50% AEP) — pas de flux externe depuis ouverture sauf arbitrage nov. 2022'
@@ -2746,7 +2748,7 @@ function initMandatChart(){
     data:{labels:labels,datasets:[
       {label:'Mandat UBS (base 100)',data:mandatData,borderColor:'#C9A84C',borderWidth:2.5,backgroundColor:'rgba(201,168,76,0.12)',fill:true,pointRadius:4,pointBackgroundColor:'#C9A84C',tension:0.3},
       {label:'MSCI World Acc €',data:msciData,borderColor:'#F472B6',borderWidth:1.8,borderDash:[5,3],fill:false,pointRadius:3,pointBackgroundColor:'#F472B6',tension:0.3},
-      {label:'Coût Lombard (Euribor+0,50%)',data:lombData,borderColor:'#F06B6B',borderWidth:1.2,borderDash:[3,4],fill:false,pointRadius:0,tension:0.3},
+      {label:'Coût Lombard (ESTER+0,80%)',data:lombData,borderColor:'#F06B6B',borderWidth:1.2,borderDash:[3,4],fill:false,pointRadius:0,tension:0.3},
       {label:'Traînée frais (1,00%/an)',data:fraisData,borderColor:'#F59340',borderWidth:1,borderDash:[2,5],fill:false,pointRadius:0,tension:0.3}
     ]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
