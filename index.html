@@ -493,6 +493,7 @@ const D = {
     // Le produit était valorisé ~40 303€ dans le snapshot 01/04 → gain net +3 627€ (109%-100%)
     // À confirmer sur le prochain relevé UBS
     {date:"2026-04-05",env:"av_ubs",val:1067694},
+    {date:"2026-05-04",env:"av_ubs",val:1084981}, // Relevé UBS 04/05/2026 — confirmé
     // AV FANTOM — historique complet (IMG_0538, versement initial 400 000€, 0 rachat, arbitrages internes)
     {date:"2021-09-30",env:"av_cnp_fantom",val:400000},
     {date:"2021-10-31",env:"av_cnp_fantom",val:399825},
@@ -533,6 +534,7 @@ const D = {
     {date:"2026-02-28",env:"av_cnp_fantom",val:456636},
     {date:"2026-03-31",env:"av_cnp_fantom",val:448506},
     {date:"2026-04-01",env:"av_cnp_fantom",val:448393},
+    {date:"2026-05-04",env:"av_cnp_fantom",val:448824}, // Relevé UBS 04/05/2026 — confirmé
     {date:"2025-04-01",env:"pea_fortuneo",val:23721},
     {date:"2026-04-05",env:"pea_fortuneo",val:23755},
     {date:"2025-04-01",env:"av_bnp",val:153152},
@@ -567,22 +569,28 @@ const D = {
   ],
 
   positions:[
-    {env:"av_ubs",poche:"Libre UBS",support:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",cat:"structuré",val:100400,pru:100834},
+    {env:"av_ubs",poche:"Libre UBS",support:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",cat:"structuré",val:91817,pru:100834},
     // Alizé 5 Ans Oil & Gas 2025 (FR001400X870) — REMBOURSÉ le 02/04/2026 à 109% — position supprimée de D.positions
-    {env:"av_ubs",poche:"Libre UBS",support:"FCPR Eurazeo Strategic Opportunities 3 D",isin:"FR001400B3M1",cat:"pe",val:52627,pru:null}, // AEP 31/12/2025 : 127,29€/UC × 412,65 parts
-    {env:"av_ubs",poche:"Libre UBS",support:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",cat:"structuré",val:115537,pru:100000}, // AEP 31/12/2025 : 116,77€/UC × 989,44 parts
-    {env:"av_ubs",poche:"Libre UBS",support:"Fonds Général AEP",isin:null,cat:"fonds_euros",val:46230,pru:null}, // AEP 31/12/2025 : 4,07% répartition — taux net 2,96%/an, intérêts 2025 : 2 112,60€
-    {env:"av_ubs",poche:"Libre UBS",support:"BNP Paribas Mois ISR I Capitalisation",isin:"FR0007009808",cat:"monétaire",val:126774,pru:null}, // AEP 31/12/2025 : 25 049€/UC × 5,06 parts
-    {env:"av_ubs",poche:"Mandat UBS",support:"Mandat UBS (55 lignes — valorisation globale)",isin:null,cat:"mandat",val:608885,pru:null}, // AEP 31/12/2025 — val au 05/04/2026 : 582 292€
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A European Industrials 2026",isin:"FR0014015J79",cat:"structuré",val:100000,pru:100000},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Atlas 10 Ans CMS EUR 10Y 25",isin:"FR0014010A73",cat:"structuré",val:96186,pru:99960},
+    {env:"av_ubs",poche:"Libre UBS",support:"FCPR Eurazeo Strategic Opportunities 3 D",isin:"FR001400B3M1",cat:"pe",val:53285,pru:null}, // AEP 31/12/2025 : 127,29€/UC × 412,65 parts
+    {env:"av_ubs",poche:"Libre UBS",support:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",cat:"structuré",val:88988,pru:100000}, // AEP 31/12/2025 : 116,77€/UC × 989,44 parts
+    {env:"av_ubs",poche:"Libre UBS",support:"Fonds Général AEP",isin:null,cat:"fonds_euros",val:46327,pru:null}, // AEP 31/12/2025 : 4,07% répartition — taux net 2,96%/an, intérêts 2025 : 2 112,60€
+    {env:"av_ubs",poche:"Libre UBS",support:"BNP Paribas Mois ISR I Capitalisation",isin:"FR0007009808",cat:"monétaire",val:46122,pru:null}, // AEP 31/12/2025 : 25 049€/UC × 5,06 parts
+    // Climber 8 Ans Panier Luxe 2026 — FR0014015K43, 100 parts, val relevé 04/05/2026
+    {env:"av_ubs",poche:"Libre UBS",support:"Climber 8 Ans Panier Luxe 2026",isin:"FR0014015K43",cat:"structuré",val:95815,pru:100000},
+    // Alizé Banks Access Point 2025 — FR0014012KB6, 35 parts, val relevé 04/05/2026
+    {env:"av_ubs",poche:"Libre UBS",support:"Alizé Banks Access Point 2025",isin:"FR0014012KB6",cat:"structuré",val:33980,pru:35000},
+    // Alizé O2 5 Ans Santé 2025 — FR0014012KC4, 15 parts, val relevé 04/05/2026
+    {env:"av_ubs",poche:"Libre UBS",support:"Alizé O2 5 Ans Santé 2025",isin:"FR0014012KC4",cat:"structuré",val:13835,pru:14383},
+    {env:"av_ubs",poche:"Mandat UBS",support:"Mandat UBS (55 lignes — valorisation globale)",isin:null,cat:"mandat",val:614812,pru:null}, // Relevé 04/05/2026 // AEP 31/12/2025 — val au 05/04/2026 : 582 292€
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A European Industrials 2026",isin:"FR0014015J79",cat:"structuré",val:97461,pru:100000},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Atlas 10 Ans CMS EUR 10Y 25",isin:"FR0014010A73",cat:"structuré",val:91051,pru:99960},
     {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé 5 Ans Oil & Gas 2025",isin:"FR001400X870",cat:"structuré",val:53773,pru:50000},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"LMDG FloatFX 23 ACT R 3 Décimales",isin:"FR0013370988",cat:"structuré",val:63104,pru:null},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"LM IG Fi 28 EUR Parts R",isin:"FR001400NQS0",cat:"structuré",val:60487,pru:null},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A Oil & Gas 2025",isin:"FR0014012K87",cat:"structuré",val:35579,pru:34972},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A Santé 2025",isin:"FR0014012KC4",cat:"structuré",val:14383,pru:14988},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Ostrum ISR Cash Trésorerie C",isin:"FR0010622514",cat:"monétaire",val:14597,pru:null},
-    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"CNP Patrimoine Euros Lib RT 4G",isin:null,cat:"fonds_euros",val:18776,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"LMDG FloatFX 23 ACT R 3 Décimales",isin:"FR0013370988",cat:"structuré",val:62466,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"LM IG Fi 28 EUR Parts R",isin:"FR001400NQS0",cat:"structuré",val:59841,pru:null},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A Oil & Gas 2025",isin:"FR0014012K87",cat:"structuré",val:36282,pru:34972},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Alizé O2 5A Santé 2025",isin:"FR0014012KC4",cat:"structuré",val:14080,pru:14988},
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"Ostrum ISR Cash Trésorerie C",isin:"FR0010622514",cat:"monétaire",val:68886,pru:null}, // Relevé 04/05/2026 — 209 parts
+    {env:"av_cnp_fantom",poche:"Libre Lib'RT",support:"CNP Patrimoine Euros Lib RT 4G",isin:null,cat:"fonds_euros",val:18757,pru:null},
     // PEA — données exactes Finary IMG_0547 (05/04/2026)
     {env:"pea_fortuneo",poche:"PEA",support:"iShares MSCI World Swap PEA UCITS ETF",isin:"IE0002XZSH01",cat:"etf",val:11048,pru:10444,qty:1826,pru_unit:5.72,px:6.05},
     {env:"pea_fortuneo",poche:"PEA",support:"BNP Paribas Easy S&P 500 UCITS ETF EUR C",isin:"FR0011550185",cat:"etf",val:10699,pru:10316,qty:372,pru_unit:27.73,px:28.76},
@@ -604,7 +612,7 @@ const D = {
   structures:[
     // ── AV UBS EN COURS ──
     {id:"st001",env:"av_ubs",nom:"Atlas 10 Ans Taux EUR 10Y II 2024",isin:"FR001400QSK6",type:"taux",sous_jacent:"Taux CMS EUR 10 ans (EUAMDB10Index)",emetteur:"SG Issuer / Société Générale",
-      souscription:"2024-08-02",echeance:"2034-08-02",investi:100834,statut:"EN COURS",val:100400,pnl_latent:-434,pnl_realise:null,
+      souscription:"2024-08-02",echeance:"2034-08-02",investi:100834,statut:"EN COURS",val:91817,pnl_latent:-9017,pnl_realise:null,
       capital_garanti_echeance:true,
       // Constatations annuelles : coupon 7% si CMS ≤ 3,20% / autocall si CMS ≤ 2,50%
       dates_constatation:["2025-08-02","2026-08-02","2027-08-02","2028-08-02","2029-08-02","2030-08-02","2031-08-02","2032-08-02","2033-08-02"],
@@ -622,12 +630,12 @@ const D = {
       note:"Source: Notification UBS 26/03/2026. Niveau initial 375,19 → clôture 540,63 (+44%). Remb. 109% payé le 02/04/2026. TRI: ~8,8%/an.",
       capital_garanti_echeance:false},
     {id:"st003",env:"av_ubs",nom:"LMDG Float-To-Fix 2027 (EUR) R",isin:"FR0013370988",type:"taux",sous_jacent:"Obligations crédit euro IG/HY",emetteur:"La Maison de Gestion",
-      souscription:"2023-02-21",echeance:"2027-01-01",investi:100000,statut:"EN COURS",val:115537,pnl_latent:15537,pnl_realise:null,
+      souscription:"2023-02-21",echeance:"2027-01-01",investi:100000,statut:"EN COURS",val:88988,pnl_latent:-11012,pnl_realise:null,
       capital_garanti_echeance:false,dates_constatation:[],coupons:[],conditions:{},taux_sortie:null,
       note:"Obligation structurée taux flottant → fixe. Pas d'autocall."},
     {id:"st004",env:"av_ubs",nom:"Climber 8 Ans Panier Luxe 2026",isin:"FR0014015K43",type:"autocall",sous_jacent:"LVMH / Richemont / Kering / Hermès (panier équipondéré)",emetteur:"CIC Market Solutions",
       souscription:"2026-03-25",echeance:"2034-03-27",
-      investi:100000,statut:"EN COURS",val:100000,pnl_latent:0,
+      investi:100000,statut:"EN COURS",val:95815,pnl_latent:-4185,
       taux_sortie:0.0475,conditions:{barriere_capital:0.60,barriere_coupon:0.70,coupon_taux:0.0475},
       dates_constatation:["2027-03-18","2028-03-20","2029-03-19","2030-03-18","2031-03-18","2032-03-18","2033-03-18","2034-03-20"],
       coupons:[],
@@ -646,13 +654,13 @@ const D = {
       coupons:[{date:"2025-03-31",total:5496,note:"Source: KID Goldman Sachs FR1459AB0308. Coupon 53€/1000€ (~5,3%/an) si OilGas ≥ 70% niveau initial. Autocall annuel si ≥ 100%. Barrière capital 60% à l'échéance."}]},
     // ── AV CNP FANTOM EN COURS ──
     {id:"st010",env:"av_cnp_fantom",nom:"Alizé O2 5 Ans European Industrials 2026",isin:"FR0014015J79",type:"autocall",sous_jacent:"European Industrials",emetteur:"CNP/UBS",
-      souscription:"2026-02-16",echeance:"2031-02-16",investi:100000,statut:"EN COURS",val:100000,pnl_latent:0,pnl_realise:null,
+      souscription:"2026-02-16",echeance:"2031-02-16",investi:100000,statut:"EN COURS",val:97461,pnl_latent:-2539,pnl_realise:null,
       capital_garanti_echeance:false,
       dates_constatation:["2027-02-16","2028-02-16","2029-02-16","2030-02-16"],
       coupons:[],conditions:{barriere_capital:0.70},taux_sortie:null,
       note:"Autocall quotidien à partir du 22/10/2026 (entre 22/10/2026 et 21/10/2030)"},
     {id:"st011",env:"av_cnp_fantom",nom:"Atlas 10 Ans CMS EUR 10Y 25",isin:"FR0014010A73",type:"taux",sous_jacent:"EUR CMS 10Y",emetteur:"CNP",
-      souscription:"2025-06-30",echeance:"2035-06-30",investi:99960,statut:"EN COURS",val:96186,pnl_latent:-3774,pnl_realise:null,
+      souscription:"2025-06-30",echeance:"2035-06-30",investi:99960,statut:"EN COURS",val:91051,pnl_latent:-8909,pnl_realise:null,
       capital_garanti_echeance:false,
       dates_constatation:["2026-06-30","2027-06-30","2028-06-30","2029-06-30","2030-06-30","2031-06-30","2032-06-30","2033-06-30","2034-06-30"],
       coupons:[],conditions:{},taux_sortie:null},
@@ -662,7 +670,7 @@ const D = {
       dates_constatation:["2026-03-06","2027-03-06","2028-03-06","2029-03-06"],
       coupons:[],conditions:{barriere_capital:0.70},taux_sortie:null},
     {id:"st013",env:"av_cnp_fantom",nom:"Alizé O2 5 Ans Oil & Gas 2025",isin:"FR0014012K87",type:"autocall",sous_jacent:"STOXX® 600 Oil & Gas (SXEP)",emetteur:"BNP Paribas Issuance BV",
-      souscription:"2025-10-29",echeance:"2030-10-29",investi:34972,statut:"EN COURS",val:35579,pnl_latent:607,pnl_realise:null,
+      souscription:"2025-10-29",echeance:"2030-10-29",investi:34972,statut:"EN COURS",val:36282,pnl_latent:1310,pnl_realise:null,
       capital_garanti_echeance:false,
       // KID: autocall chaque jour de bourse entre 22/10/2026 et 21/10/2030
       dates_constatation:["2026-10-22","2027-10-22","2028-10-22","2029-10-22"],
@@ -842,11 +850,25 @@ const D = {
       {date:"2025-03-31", val:575782,  src:"AEP Q1 2025"},
       {date:"2025-06-30", val:582291,  src:"AEP Q2 2025"},
       {date:"2025-12-31", val:608885,  src:"AEP Information Annuelle 2025 (reçue 04/04/2026)"},
-      {date:"2026-04-05", val:582292,  src:"Relevé UBS 05/04/2026 (confirmé)"}
+      {date:"2026-04-05", val:582292,  src:"Relevé UBS 05/04/2026 (confirmé)"},
+      {date:"2026-05-04", val:614812,  src:"Relevé UBS 04/05/2026 — mandat détail confirmé"}
     ],
 
     // Note méthodologique TWRR
-    note_twrr:"TWRR calculé sur jalons documentés. Données clés confirmées : transfert 50k€ du 18/07/2022 (proposition investissement UBS), valeur mandat 30/11/2022 = 516 990€ (AEP situation nov 2022). Flag confirme:true sur le flux.",
+    // Performances annuelles DOCUMENTÉES — Relevé UBS 04/05/2026 (section "Point sur la performance du mandat")
+    perf_annuelle:[
+      {annee:2021, perf:0.0005, note:"Depuis souscription 13/09/2021 — YTD partiel"},
+      {annee:2022, perf:-0.0700, note:"Relevé UBS 04/05/2026"},
+      {annee:2023, perf:0.0716, note:"Relevé UBS 04/05/2026"},
+      {annee:2024, perf:0.0539, note:"Relevé UBS 04/05/2026"},
+      {annee:2025, perf:0.0480, note:"Relevé UBS 04/05/2026"},
+      {annee:2026, perf:0.0092, note:"YTD au 04/05/2026 — partiel"}
+    ],
+    // TWRR reconstruit depuis les perfs annuelles documentées :
+    // Produit = (1+0.0005)(1-0.07)(1+0.0716)(1+0.0539)(1+0.048)(1+0.0092) = ~1.1116 → +11.16% cumulé
+    // Durée : sept 2021 → mai 2026 ≈ 4.65 ans → TWRR annualisé ≈ (1.1116)^(1/4.65)-1 ≈ +2.30%/an
+    // NOTA: le relevé affiche "Depuis souscription: 11.16%" — exactement cohérent
+    note_twrr:"TWRR calculé sur jalons documentés. Performances annuelles confirmées par relevé UBS 04/05/2026 : 2021 +0,05% / 2022 -7,00% / 2023 +7,16% / 2024 +5,39% / 2025 +4,80% / YTD 2026 +0,92%. Cumul depuis souscription : +11,16% (confirmé).",
     note_frais:"Frais de gestion mandat (0,50%/an) prélevés en continu par UBS — valorisations déjà nettes. Frais AEP (0,50%/an) prélevés sur l'enveloppe globale, non isolables sur le mandat seul."
   },
 
@@ -2697,6 +2719,23 @@ function renderMandatSection(){
     +'</div>'
 
     // Table snapshots
+    // Table performances annuelles documentées
+    +function(){
+      var pa=D.mandat.perf_annuelle||[];
+      if(!pa.length) return '';
+      var rows=pa.map(function(p){
+        var cl=p.perf>=0?'pos':'neg';
+        var s=(p.perf>=0?'+':'')+(p.perf*100).toFixed(2).replace('.',',')+'%';
+        return '<tr><td class="bold">'+p.annee+'</td><td class="num '+cl+'">'+s+'</td>'
+              +'<td class="muted" style="font-size:.68rem">'+p.note+'</td></tr>';
+      }).join('');
+      return '<div class="sec-title" style="font-size:.82rem;margin:14px 0 8px">Performances annuelles documentées</div>'
+        +'<table class="tbl"><thead><tr><th>Année</th><th class="num">Performance</th><th>Source</th></tr></thead>'
+        +'<tbody>'+rows+'</tbody></table>'
+        +'<div style="font-size:.7rem;color:var(--txt3);margin-top:4px;font-family:DM Mono,monospace">'
+        +'Cumul depuis souscription : +11,16% — TWRR annualisé reconstitué ≈ +2,30%/an sur 4,65 ans (sept. 2021 → mai 2026)'
+        +'</div>';
+    }()
     +'<div class="sec-title" style="font-size:.82rem;margin-bottom:8px">Valorisations trimestrielles</div>'
     +'<table class="tbl"><thead><tr>'
     +'<th>Période</th><th class="num">Valeur fin</th><th class="num">Flux entrant</th>'
@@ -2815,7 +2854,7 @@ function renderStrategie(){
   // ── Calcul allocation ACTUELLE (dynamique sur valeurs réelles)
   const mandatUBS = 582292; // à affiner avec reporting UBS
   const etfLiquide = valEnv('pea_fortuneo') + valEnv('av_finary') + mandatUBS;
-  const fondsEuros = 18776 + 46230 + 10059; // FANTOM FE + AV UBS Fonds Général AEP 31/12/2025 + BNP FE
+  const fondsEuros = 18757 + 46327 + 10059; // Relevé 04/05/2026 // FANTOM FE + AV UBS Fonds Général AEP 31/12/2025 + BNP FE
   const stTaux = 115537+100400+96186+63104+60487; // structurés taux EN COURS (LMDG mis à jour AEP 31/12/2025)
   const stAuto = stVal - stTaux; // structurés autocall EN COURS (approximation)
   const pe = D.pe.valorisations[0] ? D.pe.valorisations[0].actif_net : 109950;
@@ -3547,12 +3586,12 @@ function _buildPDF(){
     y+=2;
 
     // Blocs tels que définis dans la section Stratégie de l'app
-    // fondsEuros = 18776 + 46230 + 10059 = 75065€ (AEP 31/12/2025)
+    // fondsEuros = 18757 + 46327 + 10059 = 75143€ (Relevé 04/05/2026)
     // etfLiquide = mandat 582292 + PEA 23755 + Finary 3430 = 609477€
     // stVal = structurés en cours valorisés = 762075€
     // pe = 109950€  |  pt = 1806374€
     var pt_=ptotal();
-    var fondsEurosVal=18776+46230+10059; // FANTOM FE + AV UBS Fonds Général AEP 31/12/2025 + BNP FE
+    var fondsEurosVal=18757+46327+10059; // Relevé 04/05/2026 // FANTOM FE + AV UBS Fonds Général AEP 31/12/2025 + BNP FE
     var etfVal=calcTWRRMandat().valFinale+(valEnv('pea_fortuneo')||0)+(valEnv('av_finary')||0);
     var stVal_=D.structures.filter(function(s){return s.statut==='EN COURS';}).reduce(function(a,s){return a+(s.val||0);},0);
     var peVal=valEnv('pe_global_strategies')||0;
